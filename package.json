@@ -1,0 +1,38 @@
+{
+  "name": "@microsoft.azure/autorest.terraform",
+  "version": "0.0.1",
+  "description": "The AutoRest extension that generates Terraform Azure resource manager provider in Go code.",
+  "scripts": {
+    "start": "dotnet bin/netcoreapp2.0/AutoRest.Terraform.dll --server",
+    "clean": "gulp clean",
+    "build": "gulp build",
+    "build:debug": "gulp build:debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Azure/autorest.terraform"
+  },
+  "readme": "https://github.com/Azure/autorest.terraform/readme.md",
+  "keywords": [
+    "autorest",
+    "terraform",
+    "golang"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azure/autorest.terraform/issues"
+  },
+  "homepage": "https://github.com/Azure/autorest.terraform#readme",
+  "devDependencies": {
+    "@microsoft.azure/autorest.modeler": "^2.3.47",
+    "autorest": "^2.0.4245",
+    "dotnet-sdk-2.0.0": "^1.4.4",
+    "gulp": "^3.9.1",
+    "gulp-cli": "^2.0.1",
+    "gulp-dotnet-cli": "^1.1.0"
+  },
+  "dependencies": {
+    "dotnet-2.0.0": "^1.4.4"
+  }
+}

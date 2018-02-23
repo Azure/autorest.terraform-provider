@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <BaseOutputPath>../bin</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyName>AutoRest.Terraform</AssemblyName>
+    <Copyright>Copyright (c) Microsoft Corporation</Copyright>
+    <RootNamespace>AutoRest.Terraform</RootNamespace>
+  </PropertyGroup>
+
+  <Target Name="Nuke" AfterTargets="Clean">
+    <RemoveDir Directories="$(BaseOutputPath);$(BaseIntermediateOutputPath)" />
+  </Target>
+
+</Project>
