@@ -18,4 +18,8 @@
     <RemoveDir Directories="$(BaseOutputPath);$(BaseIntermediateOutputPath)" />
   </Target>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AutoRest.Common" Version="2.4.43" />
+  </ItemGroup>
+
 </Project>

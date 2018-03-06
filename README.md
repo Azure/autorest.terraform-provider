@@ -1,5 +1,6 @@
+# Azure Terraform Provider Generator (AutoRest Plugin)
 
-# Contributing
+## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
@@ -12,3 +13,43 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## AutoRest extension configuration
+
+```yaml
+use-extension:
+    "@microsoft.azure/autorest.modeler": "2.3.47"
+
+pipeline:
+    terraform/imodeler1:
+        input: openapi-document/identity
+        output-artifact: code-model-v1
+        scope: terraform
+    terraform/commonmarker:
+        input: imodeler1
+        output-artifact: code-model-v1
+    terraform/cm/transform:
+        input: commonmarker
+        output-artifact: code-model-v1
+    terraform/cm/emitter:
+        input: transform
+        scope: scope-cm/emitter
+    terraform/generate:
+        plugin: terraform
+        input: cm/transform
+        output: source-file-terraform
+    terraform/transform:
+        input: generate
+        output-artifact: source-file-terraform
+        scope: scope-transform-string
+    terraform/emitter:
+        input: transform
+        scope: scope-terraform/emitter
+
+scope-terraform/emitter:
+    input-artifact: source-file-terraform
+    output-uri-expr: $key
+
+output-artifact:
+  - source-file-terraform
+```
