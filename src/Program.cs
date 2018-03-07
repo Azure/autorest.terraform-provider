@@ -22,7 +22,7 @@ namespace AutoRest.Terraform
         {
             Console.WriteLine("This is not an entry point.");
             Console.WriteLine("Please invoke this extension through AutoRest:");
-            Console.WriteLine($"\tautorest --{TfProviderPlugin.PluginName} ...");
+            Console.WriteLine($"\tautorest --{TfProviderPluginHost.PluginName} ...");
         }
 
         internal void Run()
@@ -39,7 +39,7 @@ namespace AutoRest.Terraform
         private IDictionary<string, Func<Connection, string, NewPlugin>> Providers { get; }
             = new Dictionary<string, Func<Connection, string, NewPlugin>>
             {
-                { TfProviderPlugin.PluginName, (connection, session) => new TfProviderPlugin(connection, session) }
+                { TfProviderPluginHost.PluginName, (connection, session) => new TfProviderPluginHost(connection, session) }
             };
 
         public Task<IEnumerable<string>> GetPluginNames() => Task.FromResult((IEnumerable<string>)Providers.Keys);
