@@ -1,5 +1,5 @@
 {
-  "name": "@microsoft.azure/autorest.terraform",
+  "name": "@microsoft.azure/autorest.terraform-provider",
   "version": "0.0.1",
   "description": "The AutoRest extension that generates Terraform Azure resource manager provider in Go code.",
   "scripts": {
@@ -10,9 +10,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Azure/autorest.terraform"
+    "url": "https://github.com/Azure/autorest.terraform-provider"
   },
-  "readme": "https://github.com/Azure/autorest.terraform/readme.md",
+  "readme": "https://github.com/Azure/autorest.terraform-provider/readme.md",
   "keywords": [
     "autorest",
     "terraform",
@@ -21,9 +21,9 @@
   "author": "Microsoft Corporation",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Azure/autorest.terraform/issues"
+    "url": "https://github.com/Azure/autorest.terraform-provider/issues"
   },
-  "homepage": "https://github.com/Azure/autorest.terraform#readme",
+  "homepage": "https://github.com/Azure/autorest.terraform-provider#readme",
   "devDependencies": {
     "@microsoft.azure/autorest.modeler": "^2.3.47",
     "autorest": "^2.0.4245",
