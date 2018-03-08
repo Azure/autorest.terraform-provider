@@ -21,35 +21,35 @@ use-extension:
     "@microsoft.azure/autorest.modeler": "2.3.47"
 
 pipeline:
-    terraform/imodeler1:
+    terraform-provider/imodeler1:
         input: openapi-document/identity
         output-artifact: code-model-v1
-        scope: terraform
-    terraform/commonmarker:
+        scope: terraform-provider
+    terraform-provider/commonmarker:
         input: imodeler1
         output-artifact: code-model-v1
-    terraform/cm/transform:
+    terraform-provider/cm/transform:
         input: commonmarker
         output-artifact: code-model-v1
-    terraform/cm/emitter:
+    terraform-provider/cm/emitter:
         input: transform
         scope: scope-cm/emitter
-    terraform/generate:
-        plugin: terraform
+    terraform-provider/generate:
+        plugin: terraform-provider
         input: cm/transform
-        output: source-file-terraform
-    terraform/transform:
+        output: source-file-terraform-provider
+    terraform-provider/transform:
         input: generate
-        output-artifact: source-file-terraform
+        output-artifact: source-file-terraform-provider
         scope: scope-transform-string
-    terraform/emitter:
+    terraform-provider/emitter:
         input: transform
-        scope: scope-terraform/emitter
+        scope: scope-terraform-provider/emitter
 
-scope-terraform/emitter:
-    input-artifact: source-file-terraform
+scope-terraform-provider/emitter:
+    input-artifact: source-file-terraform-provider
     output-uri-expr: $key
 
 output-artifact:
-  - source-file-terraform
+  - source-file-terraform-provider
 ```

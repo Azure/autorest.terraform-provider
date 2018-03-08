@@ -13,7 +13,7 @@ namespace AutoRest.Terraform
     internal class TfProviderPluginHost
         : NewPlugin
     {
-        public const string PluginName = "terraform";
+        public const string PluginName = "terraform-provider";
 
         public TfProviderPluginHost(Connection connection, string session)
             : base(connection, PluginName, session)
