@@ -3,6 +3,7 @@ using AutoRest.Core.Model;
 using AutoRest.Core.Parsing;
 using AutoRest.Core.Utilities;
 using Microsoft.Perks.JsonRPC;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,11 @@ using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
+    internal enum Channel
+    {
+        Information
+    }
+
     internal class TfProviderPluginHost
         : NewPlugin
     {
@@ -24,6 +30,16 @@ namespace AutoRest.Terraform
         {
             return new TfProviderPlugin(this).ProcessAsync();
         }
+
+        public void ShowMessage(Channel channel, string content)
+        {
+            var message = new Message
+            {
+                Channel = channel.ToString().ToLowerInvariant(),
+                Text = content
+            };
+            Message(message);
+        }
     }
 
     internal class TfProviderPlugin
@@ -34,17 +50,22 @@ namespace AutoRest.Terraform
             Context = new Context
             {
                 Context,
-                () => Singleton<TfProviderPlugin>.Instance = this,
+                new Factory<CompositeType, CompositeTypeTf>(),
+                new Factory<Property, PropertyTf>(),
+                new Factory<Parameter, ParameterTf>(),
+                new Factory<Method, MethodTf>(),
+                new Factory<MethodGroup, MethodGroupTf>(),
                 new Factory<CodeModel, CodeModelTf>()
             };
             Host = host;
+            Singleton<TfProviderPlugin>.Instance = this;
         }
 
         public TfProviderPluginHost Host { get; }
 
         public async Task<bool> ProcessAsync()
         {
-            await Settings.LoadSettingsAsync(Host);
+            await Settings.LoadSettingsAsync();
 
             var inputs = await Host.ListInputs();
             if (inputs == null || inputs.Length != 1)
@@ -57,8 +78,13 @@ namespace AutoRest.Terraform
             using (Activate())
             {
                 var codeModel = Serializer.Load(inputInJson);
-                codeModel = Transformer.TransformCodeModel(codeModel);
-                await CodeGenerator.Generate(codeModel);
+                DisplayCodeModel("Original Code Model", codeModel);
+                if (!Settings.NoProcess)
+                {
+                    codeModel = Transformer.TransformCodeModel(codeModel);
+                    DisplayCodeModel("Transformed Code Model", codeModel);
+                    await CodeGenerator.Generate(codeModel);
+                }
             }
 
             var outFs = Settings.StandardSettings.FileSystemOutput;
@@ -69,6 +95,18 @@ namespace AutoRest.Terraform
             }
 
             return true;
+        }
+
+        private void DisplayCodeModel(string title, CodeModelTf model)
+        {
+            if (Settings.DisplayModel)
+            {
+                var builder = new IndentedStringBuilder("\t");
+                builder.Indent();
+                model.AppendToDisplayString(builder);
+                builder.Outdent();
+                Host.ShowMessage(Channel.Information, $"{title}{Environment.NewLine}{builder.ToString()}");
+            }
         }
     }
 }
