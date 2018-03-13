@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace AutoRest.Terraform
 {
-    internal class TransformerTf
+    internal sealed class TransformerTf
         : CodeModelTransformer<CodeModelTf>
     {
         public TransformerTf()

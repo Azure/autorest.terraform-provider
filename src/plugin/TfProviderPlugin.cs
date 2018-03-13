@@ -65,14 +65,14 @@ namespace AutoRest.Terraform
 
         public async Task<bool> ProcessAsync()
         {
-            await Settings.LoadSettingsAsync();
+            await Settings.LoadSettingsAsync().ConfigureAwait(false);
 
-            var inputs = await Host.ListInputs();
+            var inputs = await Host.ListInputs().ConfigureAwait(false);
             if (inputs == null || inputs.Length != 1)
             {
                 throw new InvalidInputException($"Plugin \"{TfProviderPluginHost.PluginName}\" received incorrect number of inputs: [{inputs.Length} : {string.Join(",", inputs)}]");
             }
-            var inputContent = await Host.ReadFile(inputs.Single());
+            var inputContent = await Host.ReadFile(inputs.Single()).ConfigureAwait(false);
             var inputInJson = inputContent.EnsureYamlIsJson();
 
             using (Activate())
@@ -83,7 +83,7 @@ namespace AutoRest.Terraform
                 {
                     codeModel = Transformer.TransformCodeModel(codeModel);
                     DisplayCodeModel("Transformed Code Model", codeModel);
-                    await CodeGenerator.Generate(codeModel);
+                    await CodeGenerator.Generate(codeModel).ConfigureAwait(false);
                 }
             }
 

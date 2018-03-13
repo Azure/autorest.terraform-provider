@@ -1,11 +1,10 @@
 using AutoRest.Core.Model;
 using AutoRest.Core.Utilities;
 using System.Linq;
-using System.Text;
 
 namespace AutoRest.Terraform
 {
-    internal class CodeModelTf
+    public class CodeModelTf
         : CodeModel
     {
         public void AppendToDisplayString(IndentedStringBuilder builder)

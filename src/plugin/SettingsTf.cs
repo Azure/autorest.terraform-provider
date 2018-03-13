@@ -8,6 +8,7 @@ namespace AutoRest.Terraform
     internal class SettingsTf
         : IGeneratorSettings
     {
+        private const string NamespaceOption = "namespace";
         private static readonly string DisplayModelOption = $"{TfProviderPluginHost.PluginName}.display-model";
         private static readonly string NoProcessOption = $"{TfProviderPluginHost.PluginName}.no-process";
 
@@ -29,8 +30,9 @@ namespace AutoRest.Terraform
         public async Task LoadSettingsAsync()
         {
             StandardSettings.Host = Host;
-            StandardSettings.CustomSettings.Add(nameof(DisplayModel), await Host.GetValue<bool>(DisplayModelOption));
-            StandardSettings.CustomSettings.Add(nameof(NoProcess), await Host.GetValue<bool>(NoProcessOption));
+            StandardSettings.Namespace = await Host.GetValue(NamespaceOption).ConfigureAwait(false);
+            StandardSettings.CustomSettings.Add(nameof(DisplayModel), await Host.GetValue<bool>(DisplayModelOption).ConfigureAwait(false));
+            StandardSettings.CustomSettings.Add(nameof(NoProcess), await Host.GetValue<bool>(NoProcessOption).ConfigureAwait(false));
             Settings.PopulateSettings(this, StandardSettings.CustomSettings);
         }
     }
