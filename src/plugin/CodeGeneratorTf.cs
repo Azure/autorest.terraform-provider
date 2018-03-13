@@ -51,7 +51,7 @@ namespace AutoRest.Terraform
             foreach (var templateGroup in templateGroups)
             {
                 var content = await ConcatTemplatesAsync(templateGroup).ConfigureAwait(false);
-                await Write(content, templateGroup.Key).ConfigureAwait(false);
+                await Write(content, $"{templateGroup.Key}{ImplementationFileExtension}").ConfigureAwait(false);
             }
         }
 
