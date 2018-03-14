@@ -1,6 +1,5 @@
 using AutoRest.Core;
 using AutoRest.Terraform.Templates;
-using Humanizer;
 using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
@@ -13,12 +12,15 @@ namespace AutoRest.Terraform
             Singleton<SchemaGenerator>.Instance = this;
         }
 
-        public string FileName { get; } = $"Resource ARM {Singleton<SettingsTf>.Instance.Metadata.ResourceName}".Underscore();
+        public string FileName { get; } = Singleton<CodeNamerTf>.Instance.GetResourceFileName(Singleton<SettingsTf>.Instance.Metadata.ResourceName);
 
         public ITemplate CreateTempalte() => new SchemaTemplate { Model = this };
 
         public void Generate(CodeModelTf model)
         {
         }
+
+        public string FunctionName { get; } = Singleton<CodeNamerTf>.Instance.GetResourceDefinitionMethodName(Singleton<SettingsTf>.Instance.Metadata.ResourceName);
+        public string DeleteFunctionName => Singleton<DeleteGenerator>.Instance.FunctionName;
     }
 }

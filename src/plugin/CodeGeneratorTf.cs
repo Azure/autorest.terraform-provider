@@ -1,5 +1,4 @@
 ﻿using AutoRest.Core;
-using AutoRest.Core.Logging;
 using AutoRest.Core.Model;
 using System.Collections.Generic;
 using System.IO;
@@ -20,19 +19,12 @@ namespace AutoRest.Terraform
     internal sealed class CodeGeneratorTf
         : CodeGenerator
     {
-        public CodeGeneratorTf()
-        {
-            Generators = CreateGenerators();
-        }
-
-        private static IEnumerable<ITfProviderGenerator> CreateGenerators()
+        private IEnumerable<ITfProviderGenerator> CreateGenerators()
         {
             yield return new ImportsGenerator();
             yield return new SchemaGenerator();
             yield return new DeleteGenerator();
         }
-
-        private IEnumerable<ITfProviderGenerator> Generators { get; }
 
         public override string ImplementationFileExtension => ".go";
 
@@ -40,14 +32,14 @@ namespace AutoRest.Terraform
 
         public override async Task Generate(CodeModel codeModel)
         {
-            Logger.Instance.Log(Category.Debug, "{0} is generating (using {1} sub-generators).", nameof(CodeGeneratorTf), Generators.Count());
-
             await base.Generate(codeModel).ConfigureAwait(false);
-            foreach (var generator in Generators)
+            var generators = new List<ITfProviderGenerator>();
+            foreach (var generator in CreateGenerators())
             {
                 generator.Generate((CodeModelTf)codeModel);
+                generators.Add(generator);
             }
-            var templateGroups = Generators.ToLookup(gen => gen.FileName, gen => gen.CreateTempalte());
+            var templateGroups = generators.ToLookup(gen => gen.FileName, gen => gen.CreateTempalte());
             foreach (var templateGroup in templateGroups)
             {
                 var content = await ConcatTemplatesAsync(templateGroup).ConfigureAwait(false);

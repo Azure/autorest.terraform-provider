@@ -2,4 +2,9 @@
 @using AutoRest.Terraform
 @inherits Template<SchemaGenerator>
 
-// TODO: Generate Schema here
+func @(Model.FunctionName)() *schema.Resource {
+    return &schema.Resource {
+        Delete: @Model.DeleteFunctionName
+    }
+}
+@EmptyLine
