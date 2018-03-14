@@ -8,11 +8,6 @@ namespace AutoRest.Terraform
     class CompositeTypeTf
         : CompositeType
     {
-        public override string ToString()
-        {
-            return Name;
-        }
-
         public void AppendToDisplayString(IndentedStringBuilder builder)
         {
             var propertiesSet = new HashSet<Property>();

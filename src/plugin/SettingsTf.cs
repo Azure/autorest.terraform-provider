@@ -2,6 +2,7 @@ using AutoRest.Core;
 using AutoRest.Core.Extensibility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using static AutoRest.Core.Utilities.DependencyInjection;
@@ -64,5 +65,32 @@ namespace AutoRest.Terraform
 
         [JsonProperty]
         public string ResourceName { get; private set; }
+
+        [JsonProperty("create")]
+        public MethodDefinition CreateMethod { get; private set; }
+
+        [JsonProperty("read")]
+        public MethodDefinition ReadMethod { get; private set; }
+
+        [JsonProperty("update")]
+        public MethodDefinition UpdateMethod { get; private set; }
+
+        [JsonProperty("delete")]
+        public MethodDefinition DeleteMethod { get; private set; }
+
+        internal sealed class MethodDefinition
+        {
+            [JsonProperty("method")]
+            public string Path { get; private set; }
+
+            [JsonProperty("parameter")]
+            internal ParameterDefinition Parameter { get; private set; }
+        }
+
+        internal sealed class ParameterDefinition
+        {
+            [JsonProperty("ignore")]
+            public IEnumerable<string> Excludes { get; private set; }
+        }
     }
 }

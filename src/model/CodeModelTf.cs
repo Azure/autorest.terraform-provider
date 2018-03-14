@@ -7,6 +7,13 @@ namespace AutoRest.Terraform
     public class CodeModelTf
         : CodeModel
     {
+        public string Path => Name;
+
+        internal MethodTf CreateMethod { get; set; }
+        internal MethodTf ReadMethod { get; set; }
+        internal MethodTf UpdateMethod { get; set; }
+        internal MethodTf DeleteMethod { get; set; }
+
         public void AppendToDisplayString(IndentedStringBuilder builder)
         {
             builder.AppendLine($"{Qualifier} \"{Name}\"; Operations [{Operations.Count}]");
