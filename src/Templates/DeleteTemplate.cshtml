@@ -20,7 +20,7 @@ func @(Model.FunctionName)(d *schema.ResourceData, meta interface{}) error {
     }
 
     err = future.WaitForCompletion(ctx, client.Client)
-    if (err != nil) {
+    if err != nil {
         return fmt.Errorf("Error waiting for the deleting @Model.ResourceName %q (Resource Group %q): %+v", name, resGroup, err)
     }
 

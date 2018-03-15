@@ -9,7 +9,6 @@ namespace AutoRest.Terraform
     {
         public ImportsGenerator()
         {
-            Singleton<ImportsGenerator>.Instance = this;
         }
 
         public string FileName { get; } = Singleton<CodeNamerTf>.Instance.GetResourceFileName(Singleton<SettingsTf>.Instance.Metadata.ResourceName);

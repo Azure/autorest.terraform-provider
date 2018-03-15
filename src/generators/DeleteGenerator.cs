@@ -9,7 +9,6 @@ namespace AutoRest.Terraform
     {
         public DeleteGenerator()
         {
-            Singleton<DeleteGenerator>.Instance = this;
         }
 
         public string FileName => CodeNamer.GetResourceFileName(ResourceName);

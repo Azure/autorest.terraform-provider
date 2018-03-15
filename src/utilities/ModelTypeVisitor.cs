@@ -16,26 +16,19 @@ namespace AutoRest.Terraform
             switch (type)
             {
                 case PrimaryType primary:
-                    OnPrimaryVisiting(primary.KnownPrimaryType);
-                    OnPrimaryVisited(primary.KnownPrimaryType);
+                    Visit(primary.KnownPrimaryType, OnPrimaryVisiting, OnPrimaryVisited);
                     break;
                 case EnumType @enum:
-                    OnEnumVisiting(@enum.Values);
-                    OnEnumVisited(@enum.Values);
+                    Visit(@enum.Values, OnEnumVisiting, OnEnumVisited);
                     break;
                 case SequenceType sequence:
-                    OnArrayVisiting(sequence);
-                    Visit(sequence.ElementType);
-                    OnArrayVisited(sequence);
+                    Visit(sequence, sequence.ElementType, OnArrayVisiting, Visit, OnArrayVisited);
                     break;
                 case DictionaryType dictionary:
-                    OnStringMapVisiting(dictionary);
-                    Visit(dictionary.ValueType);
-                    OnStringMapVisited(dictionary);
+                    Visit(dictionary, dictionary.ValueType, OnStringMapVisiting, Visit, OnStringMapVisited);
                     break;
                 case CompositeTypeTf composite:
-                    OnComplexVisiting(composite);
-                    OnComplexVisited(composite);
+                    Visit(composite, OnComplexVisiting, OnComplexVisited);
                     break;
                 default:
                     throw new NotSupportedException($"\"{type}\" is not supported");

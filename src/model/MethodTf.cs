@@ -1,6 +1,7 @@
 ﻿using AutoRest.Core.Model;
 using AutoRest.Core.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AutoRest.Terraform
@@ -13,6 +14,8 @@ namespace AutoRest.Terraform
         private Lazy<string> path;
         public string Path => path.Value;
         public void InvalidatePath() => path = new Lazy<string>(() => $"{((MethodGroupTf)Parent).Path}/{Name}");
+
+        public IEnumerable<ResponseTf> LogicalResponses => Responses.Select(pair => new ResponseTf(pair.Key, pair.Value));
 
         public void AppendToDisplayString(IndentedStringBuilder builder)
         {

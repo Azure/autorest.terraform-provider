@@ -12,6 +12,12 @@ namespace AutoRest.Terraform
     internal class MethodPropertyVisitor
         : VisitorBase
     {
+        public MethodPropertyVisitor()
+        {
+            ChildrenTypeVisitor = new ModelTypeVisitor();
+            ChildrenTypeVisitor.ComplexVisited += ChildrenTypeVisitor_ComplexVisited;
+        }
+
         public bool SkipParameter { get; set; } = false;
 
         public bool SkipResponse { get; set; } = false;
@@ -24,49 +30,44 @@ namespace AutoRest.Terraform
             }
             if (!SkipResponse)
             {
-                // TODO
+                root.LogicalResponses.ForEach(Visit);
             }
         }
 
 
-        private void Visit(ParameterTf root) => VisitWorker(root, OnParameterVisiting, OnParameterVisited);
+        private void Visit(ParameterTf root) => Visit(root, GetTypeChildren(root.ModelType), OnParameterVisiting, Visit, OnParameterVisited);
         public event EventHandler<VisitingEventArgs<ParameterTf>> ParameterVisiting;
         public event EventHandler<VisitedEventArgs<ParameterTf>> ParameterVisited;
-        protected virtual void OnParameterVisiting(ParameterTf parameter, bool isLeaf) => OnVisiting(ParameterVisiting, parameter);
-        protected virtual void OnParameterVisited(ParameterTf parameter, bool isLeaf) => OnVisited(ParameterVisited, parameter);
+        protected virtual void OnParameterVisiting(ParameterTf parameter) => OnVisiting(ParameterVisiting, parameter);
+        protected virtual void OnParameterVisited(ParameterTf parameter) => OnVisited(ParameterVisited, parameter);
 
 
-        private void Visit(PropertyTf root) => VisitWorker(root, OnPropertyVisiting, OnPropertyVisited);
+        private void Visit(ResponseTf root) => Visit(root, GetTypeChildren(root.BodyType), OnResponseVisiting, Visit, OnResponseVisited);
+        public event EventHandler<VisitingEventArgs<ResponseTf>> ResponserVisiting;
+        public event EventHandler<VisitedEventArgs<ResponseTf>> ResponseVisited;
+        protected virtual void OnResponseVisiting(ResponseTf response) => OnVisiting(ResponserVisiting, response);
+        protected virtual void OnResponseVisited(ResponseTf response) => OnVisited(ResponseVisited, response);
+
+
+        private void Visit(PropertyTf root) => Visit(root, GetTypeChildren(root.ModelType), OnPropertyVisiting, Visit, OnPropertyVisited);
         public event EventHandler<VisitingEventArgs<PropertyTf>> PropertyVisiting;
         public event EventHandler<VisitedEventArgs<PropertyTf>> PropertyVisited;
-        protected virtual void OnPropertyVisiting(PropertyTf property, bool isLeaf) => OnVisiting(PropertyVisiting, property);
-        protected virtual void OnPropertyVisited(PropertyTf property, bool isLeaf) => OnVisited(PropertyVisited, property);
+        protected virtual void OnPropertyVisiting(PropertyTf property) => OnVisiting(PropertyVisiting, property);
+        protected virtual void OnPropertyVisited(PropertyTf property) => OnVisited(PropertyVisited, property);
 
 
-        private ModelTypeVisitor TypeVisitor { get; } = new ModelTypeVisitor();
+        private ModelTypeVisitor ChildrenTypeVisitor { get; }
 
-        private void VisitWorker<TNode, TChild>(TNode node,IEnumerable<TChild> children, Action<TNode, bool> visiting, Action<TChild> visitChild, Action<TNode, bool> visited)
+        private void ChildrenTypeVisitor_ComplexVisited(object sender, VisitedEventArgs<CompositeTypeTf> e)
+            => TypeChildren = e.Node.ComposedProperties.Cast<PropertyTf>();
+
+        private IEnumerable<PropertyTf> TypeChildren { get; set; }
+
+        private IEnumerable<PropertyTf> GetTypeChildren(IModelType type)
         {
-            var isLeaf = !children.Any();
-            visiting(node, isLeaf);
-            children.ForEach(c => visitChild(c));
-            visited(node, isLeaf);
-        }
-
-        private void VisitWorker<TNode>(TNode node, Action<TNode, bool> visiting, Action<TNode, bool> visited)
-            where TNode: IVariable
-        {
-            var children = Enumerable.Empty<Property>();
-
-            void TypeVisitor_ComplexVisited(object sender, VisitedEventArgs<CompositeTypeTf> e)
-            {
-                children = e.Node.ComposedProperties;
-                TypeVisitor.ComplexVisited -= TypeVisitor_ComplexVisited;
-            }
-            TypeVisitor.ComplexVisited += TypeVisitor_ComplexVisited;
-            TypeVisitor.Visit(node.ModelType);
-
-            VisitWorker(node, children.Cast<PropertyTf>(), visiting, Visit, visited);
+            TypeChildren = Enumerable.Empty<PropertyTf>();
+            ChildrenTypeVisitor.Visit(type);
+            return TypeChildren;
         }
     }
 }

@@ -5,7 +5,7 @@ using System;
 
 namespace AutoRest.Terraform
 {
-    class ParameterTf
+    internal class ParameterTf
         : Parameter
     {
         public ParameterTf() => InvalidatePath();

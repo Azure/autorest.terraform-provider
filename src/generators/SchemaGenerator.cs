@@ -7,9 +7,9 @@ namespace AutoRest.Terraform
     public class SchemaGenerator
         : ITfProviderGenerator
     {
-        public SchemaGenerator()
+        public SchemaGenerator(DeleteGenerator deleteGenerator)
         {
-            Singleton<SchemaGenerator>.Instance = this;
+            DeleteGenerator = deleteGenerator;
         }
 
         public string FileName { get; } = Singleton<CodeNamerTf>.Instance.GetResourceFileName(Singleton<SettingsTf>.Instance.Metadata.ResourceName);
@@ -20,7 +20,9 @@ namespace AutoRest.Terraform
         {
         }
 
+        private DeleteGenerator DeleteGenerator { get; }
+
         public string FunctionName { get; } = Singleton<CodeNamerTf>.Instance.GetResourceDefinitionMethodName(Singleton<SettingsTf>.Instance.Metadata.ResourceName);
-        public string DeleteFunctionName => Singleton<DeleteGenerator>.Instance.FunctionName;
+        public string DeleteFunctionName => DeleteGenerator.FunctionName;
     }
 }
