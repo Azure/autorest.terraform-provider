@@ -1,10 +1,69 @@
 @using AutoRest.Core
 @using AutoRest.Terraform
+@using System
+@using System.Linq;
 @inherits Template<SchemaGenerator>
 
 func @(Model.FunctionName)() *schema.Resource {
-    return &schema.Resource {
-        Delete: @Model.DeleteFunctionName
+  return &schema.Resource {
+    Delete: @Model.DeleteFunctionName,
+
+    Schema: map[string]*schema.Schema {
+@{
+    var indent = 0;
+    foreach (var field in Model.Fields)
+    {
+        if (field.IsFirstOccurrence)
+        {
+      @:@(new String(' ', indent * 2))"@field.Name": {
+            indent++;
+      @:@(new String(' ', indent * 2))Type: @field.Type,
+            if (field.Type == "schema.TypeList")
+            {
+                foreach (var sub in field.Subtypes.Skip(1))
+                {
+      @:@(new String(' ', indent * 2))Elem: &schema.Resource {
+                    indent++;
+      @:@(new String(' ', indent * 2))Type: @sub,
+                }
+                if (field.TerminalType == "complex")
+                {
+      @:@(new String(' ', indent * 2))Elem: &schema.Resource {
+                    indent++;
+      @:@(new String(' ', indent * 2))Schema: map[string]*schema.Schema {
+                    indent++;
+                }
+                else
+                {
+      @:@(new String(' ', indent * 2))Elem: &schema.Schema {
+      @:@(new String(' ', indent * 2))  Type: @field.TerminalType,
+      @:@(new String(' ', indent * 2))},
+                }
+            }
+        }
+        else
+        {
+            if (field.Type == "schema.TypeList")
+            {
+                if (field.TerminalType == "complex")
+                {
+                    indent--;
+      @:@(new String(' ', indent * 2))},
+                    indent--;
+      @:@(new String(' ', indent * 2))},
+                }
+                foreach (var sub in field.Subtypes.Skip(1))
+                {
+                    indent--;
+      @:@(new String(' ', indent * 2))},
+                }
+            }
+            indent--;
+      @:@(new String(' ', indent * 2))},
+        }
     }
+}
+    },
+  }
 }
 @EmptyLine

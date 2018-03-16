@@ -3,7 +3,7 @@ using Humanizer;
 
 namespace AutoRest.Terraform
 {
-    internal class CodeNamerTf
+    public class CodeNamerTf
         : CodeNamer
     {
         private const string FieldNameEscapedPostfix = " Field";
@@ -27,6 +27,8 @@ namespace AutoRest.Terraform
         public virtual string GetResourceDefinitionMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}");
 
         public virtual string GetResourceDeleteMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceDeletePostfix}");
+
+        public virtual string GetResourceSchemaPropertyName(string name) => (name ?? string.Empty).Underscore();
 
 
         protected virtual string GetGoPrivateMethodName(string name) => GetMethodName(name).Camelize();

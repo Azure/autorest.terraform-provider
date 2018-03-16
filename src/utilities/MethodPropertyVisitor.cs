@@ -43,9 +43,9 @@ namespace AutoRest.Terraform
 
 
         private void Visit(ResponseTf root) => Visit(root, GetTypeChildren(root.BodyType), OnResponseVisiting, Visit, OnResponseVisited);
-        public event EventHandler<VisitingEventArgs<ResponseTf>> ResponserVisiting;
+        public event EventHandler<VisitingEventArgs<ResponseTf>> ResponseVisiting;
         public event EventHandler<VisitedEventArgs<ResponseTf>> ResponseVisited;
-        protected virtual void OnResponseVisiting(ResponseTf response) => OnVisiting(ResponserVisiting, response);
+        protected virtual void OnResponseVisiting(ResponseTf response) => OnVisiting(ResponseVisiting, response);
         protected virtual void OnResponseVisited(ResponseTf response) => OnVisited(ResponseVisited, response);
 
 

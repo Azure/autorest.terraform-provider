@@ -32,7 +32,7 @@ namespace AutoRest.Terraform
         protected void OnVisited<T>(EventHandler<VisitedEventArgs<T>> handler, T node) => handler?.Invoke(this, new VisitedEventArgs<T>(node));
 
         protected void Visit<TNode>(TNode node, Action<TNode> visiting, Action<TNode> visited)
-            => Visit(node, Enumerable.Empty<object>(), visiting, null, visited);
+            => Visit(node, Enumerable.Empty<object>(), visiting, c => { }, visited);
 
         protected void Visit<TNode, TChild>(TNode node, TChild child, Action<TNode> visiting, Action<TChild> visitChild, Action<TNode> visited)
             => Visit(node, Enumerable.Repeat(child, 1), visiting, visitChild, visited);
