@@ -21,11 +21,17 @@ namespace AutoRest.Terraform
     {
         private IEnumerable<ITfProviderGenerator> CreateGenerators()
         {
+            var readGenerator = new ReadGenerator();
+            var expandGenerator = new TypeExpandGenerator();
+            var createGenerator = new CreateGenerator(readGenerator, expandGenerator);
             var deleteGenerator = new DeleteGenerator();
 
             yield return new ImportsGenerator();
-            yield return new SchemaGenerator(deleteGenerator);
+            yield return new SchemaGenerator(createGenerator, readGenerator, deleteGenerator);
+            yield return createGenerator;
+            yield return readGenerator;
             yield return deleteGenerator;
+            yield return expandGenerator;
         }
 
         public override string ImplementationFileExtension => ".go";

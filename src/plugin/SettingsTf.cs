@@ -89,6 +89,12 @@ namespace AutoRest.Terraform
 
         internal sealed class ParameterDefinition
         {
+            [JsonProperty("resourceName")]
+            public string ResourceName { get; private set; }
+
+            [JsonProperty("resourceGroupName")]
+            public string ResourceGroupName { get; private set; }
+
             [JsonProperty("ignore")]
             public IEnumerable<string> Excludes { get; private set; }
         }

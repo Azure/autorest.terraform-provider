@@ -43,6 +43,11 @@ namespace AutoRest.Terraform
                 Method = CodeModel.DeleteMethod,
                 IgnoringPatterns = new HashSet<string>(metadata.DeleteMethod.Parameter.Excludes)
             };
+            yield return new ResourceNamesTransformer
+            {
+                ResourceNamePattern = metadata.CreateMethod.Parameter.ResourceName,
+                ResourceGroupNamePattern = metadata.CreateMethod.Parameter.ResourceGroupName
+            };
         }
 
         private CodeModelTf CodeModel { get; set; }

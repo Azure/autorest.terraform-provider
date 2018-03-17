@@ -9,7 +9,12 @@ namespace AutoRest.Terraform
     public class SchemaGenerator
         : ResourceGeneratorBase
     {
-        public SchemaGenerator(DeleteGenerator deleteGenerator) => DeleteGenerator = deleteGenerator;
+        public SchemaGenerator(CreateGenerator createGen, ReadGenerator readGen, DeleteGenerator deleteGen)
+        {
+            CreateGenerator = createGen;
+            ReadGenerator = readGen;
+            DeleteGenerator = deleteGen;
+        }
 
         public override ITemplate CreateTempalte() => new SchemaTemplate { Model = this };
 
@@ -27,12 +32,73 @@ namespace AutoRest.Terraform
             visitor.Visit(CodeModel.CreateMethod);
         }
 
+        private CreateGenerator CreateGenerator { get; }
+        private ReadGenerator ReadGenerator { get; }
         private DeleteGenerator DeleteGenerator { get; }
 
         public string FunctionName => CodeNamer.GetResourceDefinitionMethodName(ResourceName);
+        public string CreateFunctionName => CreateGenerator.FunctionName;
+        public string ReadFunctionName => ReadGenerator.FunctionName;
         public string DeleteFunctionName => DeleteGenerator.FunctionName;
         public IList<Field> Fields { get; } = new List<Field>();
 
+
+        public static string GetSchemaTypeFromModelType(IModelType type)
+        {
+            switch (type)
+            {
+                case PrimaryType primary:
+                    switch (primary.KnownPrimaryType)
+                    {
+                        case KnownPrimaryType.String:
+                            return "schema.TypeString";
+                        case KnownPrimaryType.Int:
+                            return "schema.TypeInt";
+                        case KnownPrimaryType.Boolean:
+                            return "schema.TypeBool";
+                        default:
+                            return "UNSUPPORTED TYPE";
+                    }
+                case EnumType e:
+                    return "schema.TypeString";
+                case DictionaryType d:
+                    return "schema.TypeMap";
+                case SequenceType sequence:
+                case CompositeType composite:
+                    return "schema.TypeList";
+                default:
+                    return "UNSUPPORTED TYPE";
+            }
+        }
+
+        public static string GetGoTypeFromModelType(IModelType type)
+        {
+            switch (type)
+            {
+                case PrimaryType primary:
+                    switch (primary.KnownPrimaryType)
+                    {
+                        case KnownPrimaryType.String:
+                            return "string";
+                        case KnownPrimaryType.Int:
+                            return "int";
+                        case KnownPrimaryType.Boolean:
+                            return "bool";
+                        default:
+                            return "UNSUPPORTED TYPE";
+                    }
+                case EnumType e:
+                    return "string";
+                case DictionaryType d:
+                    return "MAP";
+                case SequenceType sequence:
+                    return "ARRAY";
+                case CompositeType composite:
+                    return "COMPLEX";
+                default:
+                    return "UNSUPPORTED TYPE";
+            }
+        }
 
         public sealed class Field
         {
@@ -40,39 +106,7 @@ namespace AutoRest.Terraform
             {
                 IsFirstOccurrence = firstOccurrence;
                 Name = parent.CodeNamer.GetResourceSchemaPropertyName(variable.GetClientName());
-                switch (variable.ModelType)
-                {
-                    case PrimaryType primary:
-                        switch (primary.KnownPrimaryType)
-                        {
-                            case KnownPrimaryType.String:
-                                Type = "schema.TypeString";
-                                break;
-                            case KnownPrimaryType.Int:
-                                Type = "schema.TypeInt";
-                                break;
-                            case KnownPrimaryType.Boolean:
-                                Type = "schema.TypeBool";
-                                break;
-                            default:
-                                Type = "UNSUPPORTED TYPE";
-                                break;
-                        }
-                        break;
-                    case EnumType e:
-                        Type = "schema.TypeString";
-                        break;
-                    case DictionaryType d:
-                        Type = "schema.TypeMap";
-                        break;
-                    case SequenceType sequence:
-                    case CompositeType composite:
-                        Type = "schema.TypeList";
-                        break;
-                    default:
-                        Type = variable.ModelTypeName;
-                        break;
-                }
+                Type = GetSchemaTypeFromModelType(variable.ModelType);
 
                 var visitor = new ModelTypeVisitor();
                 visitor.ArrayVisited += (s, e) => Subtypes.Add(e.Node.Name);

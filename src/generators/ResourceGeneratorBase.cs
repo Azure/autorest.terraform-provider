@@ -15,6 +15,8 @@ namespace AutoRest.Terraform
 
         protected CodeModelTf CodeModel { get; private set; }
 
+        public string GoSDKClientName => CodeNamer.GetAzureGoSDKClientName(ResourceName);
+
         public string FileName => CodeNamer.GetResourceFileName(ResourceName);
 
         public abstract ITemplate CreateTempalte();

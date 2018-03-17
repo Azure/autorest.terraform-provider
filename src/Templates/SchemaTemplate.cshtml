@@ -5,39 +5,41 @@
 @inherits Template<SchemaGenerator>
 
 func @(Model.FunctionName)() *schema.Resource {
-  return &schema.Resource {
-    Delete: @Model.DeleteFunctionName,
+	return &schema.Resource {
+		Create: @Model.CreateFunctionName,
+		Read:   @Model.ReadFunctionName,
+		Delete: @Model.DeleteFunctionName,
 
-    Schema: map[string]*schema.Schema {
+		Schema: map[string]*schema.Schema {
 @{
     var indent = 0;
     foreach (var field in Model.Fields)
     {
         if (field.IsFirstOccurrence)
         {
-      @:@(new String(' ', indent * 2))"@field.Name": {
+			@:@(new String('\t', indent))"@field.Name": {
             indent++;
-      @:@(new String(' ', indent * 2))Type: @field.Type,
+			@:@(new String('\t', indent))Type: @field.Type,
             if (field.Type == "schema.TypeList")
             {
                 foreach (var sub in field.Subtypes.Skip(1))
                 {
-      @:@(new String(' ', indent * 2))Elem: &schema.Resource {
+			@:@(new String('\t', indent))Elem: &schema.Resource {
                     indent++;
-      @:@(new String(' ', indent * 2))Type: @sub,
+			@:@(new String('\t', indent))Type: @sub,
                 }
                 if (field.TerminalType == "complex")
                 {
-      @:@(new String(' ', indent * 2))Elem: &schema.Resource {
+			@:@(new String('\t', indent))Elem: &schema.Resource {
                     indent++;
-      @:@(new String(' ', indent * 2))Schema: map[string]*schema.Schema {
+			@:@(new String('\t', indent))Schema: map[string]*schema.Schema {
                     indent++;
                 }
                 else
                 {
-      @:@(new String(' ', indent * 2))Elem: &schema.Schema {
-      @:@(new String(' ', indent * 2))  Type: @field.TerminalType,
-      @:@(new String(' ', indent * 2))},
+			@:@(new String('\t', indent))Elem: &schema.Schema {
+			@:@(new String('\t', indent))  Type: @field.TerminalType,
+			@:@(new String('\t', indent))},
                 }
             }
         }
@@ -48,22 +50,22 @@ func @(Model.FunctionName)() *schema.Resource {
                 if (field.TerminalType == "complex")
                 {
                     indent--;
-      @:@(new String(' ', indent * 2))},
+			@:@(new String('\t', indent))},
                     indent--;
-      @:@(new String(' ', indent * 2))},
+			@:@(new String('\t', indent))},
                 }
                 foreach (var sub in field.Subtypes.Skip(1))
                 {
                     indent--;
-      @:@(new String(' ', indent * 2))},
+			@:@(new String('\t', indent))},
                 }
             }
             indent--;
-      @:@(new String(' ', indent * 2))},
+			@:@(new String('\t', indent))},
         }
     }
 }
-    },
-  }
+		},
+	}
 }
 @EmptyLine

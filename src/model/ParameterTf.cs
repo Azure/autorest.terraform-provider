@@ -14,9 +14,12 @@ namespace AutoRest.Terraform
         public string Path => path.Value;
         public void InvalidatePath() => path = new Lazy<string>(() => $"{((MethodTf)Parent).Path}/{this.GetClientName()}");
 
+        public bool IsResourceName { get; set; }
+        public bool IsResourceGroupName { get; set; }
+
         public void AppendToDisplayString(IndentedStringBuilder builder)
         {
-            builder.AppendLine($"{Qualifier} \"{this.GetClientName()}\"; Location: {Location}; Type: {ModelType.ToSummaryString()}");
+            builder.AppendLine($"{Qualifier}{(IsResourceName ? "[Name]" : string.Empty)}{(IsResourceGroupName ? "[RGName]" : string.Empty)} \"{this.GetClientName()}\"; Location: {Location}; Type: {ModelType.ToSummaryString()}");
             builder.Indent();
             ModelType.AppendToDisplayString(builder);
             builder.Outdent();

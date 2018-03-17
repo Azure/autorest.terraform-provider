@@ -1,0 +1,9 @@
+﻿@using AutoRest.Core
+@using AutoRest.Terraform
+@inherits Template<ReadGenerator>
+
+func @(Model.FunctionName)(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ArmClient).@Model.GoSDKClientName
+	return nil
+}
+@EmptyLine
