@@ -13,6 +13,7 @@ namespace AutoRest.Terraform
         private const string ResourceTypeFlattenMethodPrefix = "Flatten Arm ";
         private const string ResourceCreatePostfix = " Create";
         private const string ResourceReadPostfix = " Read";
+        private const string ResourceUpdatePostfix = " Update";
         private const string ResourceDeletePostfix = " Delete";
 
         private const string AzureGoSDKClientPostfix = " Client";
@@ -27,6 +28,7 @@ namespace AutoRest.Terraform
         public virtual string GetResourceDefinitionMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}");
         public virtual string GetResourceCreateMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceCreatePostfix}");
         public virtual string GetResourceReadMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceReadPostfix}");
+        public virtual string GetResourceUpdateMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceUpdatePostfix}");
         public virtual string GetResourceDeleteMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceDeletePostfix}");
         public virtual string GetResourceSchemaPropertyName(string name) => (name ?? string.Empty).Underscore();
         public virtual string GetResourceTypeExpandMethodName(string name) => GetGoPrivateMethodName($"{ResourceTypeExpandMethodPrefix}{name ?? string.Empty}");

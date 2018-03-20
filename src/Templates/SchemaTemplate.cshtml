@@ -8,6 +8,7 @@ func @(Model.FunctionName)() *schema.Resource {
 	return &schema.Resource {
 		Create: @Model.CreateFunctionName,
 		Read:   @Model.ReadFunctionName,
+		Update: @Model.UpdateFunctionName,
 		Delete: @Model.DeleteFunctionName,
 
 		Schema: map[string]*schema.Schema {

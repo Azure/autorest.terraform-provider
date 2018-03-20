@@ -25,12 +25,14 @@ namespace AutoRest.Terraform
             var flattenGenerator = new TypeFlattenGenerator();
             var readGenerator = new ReadGenerator();
             var createGenerator = new CreateGenerator(readGenerator, expandGenerator);
+            var updateGenerator = new UpdateGenerator(readGenerator);
             var deleteGenerator = new DeleteGenerator();
 
             yield return new ImportsGenerator();
-            yield return new SchemaGenerator(createGenerator, readGenerator, deleteGenerator);
+            yield return new SchemaGenerator(createGenerator, readGenerator, updateGenerator, deleteGenerator);
             yield return createGenerator;
             yield return readGenerator;
+            yield return updateGenerator;
             yield return deleteGenerator;
             yield return expandGenerator;
             yield return flattenGenerator;

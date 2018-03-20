@@ -9,10 +9,11 @@ namespace AutoRest.Terraform
     public class SchemaGenerator
         : ResourceGeneratorBase
     {
-        public SchemaGenerator(CreateGenerator createGen, ReadGenerator readGen, DeleteGenerator deleteGen)
+        public SchemaGenerator(CreateGenerator createGen, ReadGenerator readGen, UpdateGenerator updateGen, DeleteGenerator deleteGen)
         {
             CreateGenerator = createGen;
             ReadGenerator = readGen;
+            UpdateGenerator = updateGen;
             DeleteGenerator = deleteGen;
         }
 
@@ -44,11 +45,13 @@ namespace AutoRest.Terraform
 
         private CreateGenerator CreateGenerator { get; }
         private ReadGenerator ReadGenerator { get; }
+        private UpdateGenerator UpdateGenerator { get; }
         private DeleteGenerator DeleteGenerator { get; }
 
         public string FunctionName => CodeNamer.GetResourceDefinitionMethodName(ResourceName);
         public string CreateFunctionName => CreateGenerator.FunctionName;
         public string ReadFunctionName => ReadGenerator.FunctionName;
+        public string UpdateFunctionName => UpdateGenerator.FunctionName;
         public string DeleteFunctionName => DeleteGenerator.FunctionName;
         public IList<Field> Fields { get; } = new List<Field>();
 
