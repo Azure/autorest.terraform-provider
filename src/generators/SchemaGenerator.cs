@@ -30,6 +30,16 @@ namespace AutoRest.Terraform
             visitor.PropertyVisiting += (s, e) => Fields.Add(new Field(this, true, e.Node));
             visitor.PropertyVisited += (s, e) => Fields.Add(new Field(this, false, e.Node));
             visitor.Visit(CodeModel.CreateMethod);
+
+            var responseVisitor = new MethodPropertyVisitor
+            {
+                SkipParameter = true
+            };
+            responseVisitor.ParameterVisiting += (s, e) => Fields.Add(new Field(this, true, e.Node, true));
+            responseVisitor.ParameterVisited += (s, e) => Fields.Add(new Field(this, false, e.Node, true));
+            responseVisitor.PropertyVisiting += (s, e) => Fields.Add(new Field(this, true, e.Node, true));
+            responseVisitor.PropertyVisited += (s, e) => Fields.Add(new Field(this, false, e.Node, true));
+            responseVisitor.Visit(CodeModel.ReadMethod);
         }
 
         private CreateGenerator CreateGenerator { get; }
@@ -81,7 +91,7 @@ namespace AutoRest.Terraform
                         case KnownPrimaryType.String:
                             return "string";
                         case KnownPrimaryType.Int:
-                            return "int";
+                            return "int32";
                         case KnownPrimaryType.Boolean:
                             return "bool";
                         default:
@@ -102,7 +112,7 @@ namespace AutoRest.Terraform
 
         public sealed class Field
         {
-            public Field(SchemaGenerator parent, bool firstOccurrence, IVariable variable)
+            public Field(SchemaGenerator parent, bool firstOccurrence, IVariable variable, bool isComputed = false)
             {
                 IsFirstOccurrence = firstOccurrence;
                 Name = parent.CodeNamer.GetResourceSchemaPropertyName(variable.GetClientName());
@@ -113,6 +123,10 @@ namespace AutoRest.Terraform
                 visitor.PrimaryVisited += (s, e) => TerminalType = "schema.TypeString";
                 visitor.ComplexVisited += (s, e) => TerminalType = "complex";
                 visitor.Visit(variable.ModelType);
+
+                IsComputed = isComputed;
+                IsRequired = variable.IsRequired;
+                MaxItems = GetGoTypeFromModelType(variable.ModelType) == "COMPLEX" ? (int?)1 : null;
             }
 
             public bool IsFirstOccurrence { get; }
@@ -120,6 +134,10 @@ namespace AutoRest.Terraform
             public string Type { get; }
             public IList<string> Subtypes { get; } = new List<string>();
             public string TerminalType { get; private set; }
+
+            public bool IsComputed { get; }
+            public bool IsRequired { get; }
+            public int? MaxItems { get; }
         }
     }
 }

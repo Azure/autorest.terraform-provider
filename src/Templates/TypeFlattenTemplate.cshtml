@@ -1,0 +1,78 @@
+﻿@using AutoRest.Core
+@using AutoRest.Terraform
+@inherits Template<TypeFlattenGenerator>
+
+@foreach (var complexType in Model.ComplexTypesToFlatten)
+{
+@:func @(Model.GetFlattenFunctionName(complexType.Key))(u *hdinsight.@complexType.Key) []interface{} {
+	@:results := make([]interface{}, 0)
+
+	@:if u != nil {
+		@:output := make(map[string]interface{}, 0)
+
+	foreach (var field in complexType)
+	{
+		if (field.GoType == "COMPLEX")
+		{
+		@:output["@field.TfName"] = @(Model.GetFlattenFunctionName(field.Type))(u.@field.Name)
+		}
+		else if (field.GoType == "MAP")
+		{
+		@:output["@field.TfName"] = @(Model.GetFlattenMapFunctionName(field.Type))(u.@field.Name)
+		}
+		else if (field.GoType == "ARRAY")
+		{
+		@:output["@field.TfName"] = @(Model.GetFlattenArrayFunctionName(field.Type))(u.@field.Name)
+		}
+		else if (field.GoType == "string" || field.GoType == "int32" || field.GoType == "bool")
+		{
+		@:output["@field.TfName"] = *u.@field.Name
+		}
+		else
+		{
+		@:UNSUPPORTED
+		}
+	}
+
+		@:results = append(results, output)
+	@:}
+
+	@:return results
+@:}
+@EmptyLine
+}
+
+@foreach (var arrayType in Model.ArrayTypesToFlatten)
+{
+@:func @(Model.GetFlattenArrayFunctionName(arrayType.Name))(u *@(arrayType.Type == "string" ? "[]string" : $"hdinsight.{arrayType.Type}")) []interface{} {
+	@:results := make([]interface{}, 0)
+
+	@:for _, i := range *u {
+	if (arrayType.Type == "string")
+	{
+		@:results = append(results, i)
+	}
+	else
+	{
+		@:results = append(results, @(Model.GetFlattenFunctionName(arrayType.Type))(i))
+	}
+	@:}
+
+	@:return results
+@:}
+@EmptyLine
+}
+
+@foreach (var mapType in Model.MapTypesToFlatten)
+{
+@:func @(Model.GetFlattenMapFunctionName(mapType.Name))(u *map[string]*string) map[string]string {
+	@:results := make(map[string]string)
+
+	@:for k, v := range *u {
+		@:results[k] = *v
+	@:}
+
+	@:return results
+@:}
+@EmptyLine
+}

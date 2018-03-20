@@ -26,7 +26,7 @@
         }
         else
         {
-		@:@field.Name: utils.@(field.GoType == "string" ? "String" : field.GoType == "int" ? "Int32" : field.GoType == "bool" ? "Bool" : "UNSUPPORTED")(v["@field.TfName"].(@field.GoType)),
+		@:@field.Name: utils.@(field.GoType == "string" ? "String" : field.GoType == "int32" ? "Int32" : field.GoType == "bool" ? "Bool" : "UNSUPPORTED")(v["@field.TfName"].(@field.GoType)),
         }
     }
 	@:}
@@ -45,7 +45,7 @@
     }
     else
     {
-		@:v = append(v, @(Model.GetExpandFunctionName(arrayType.Type))(i.([]interface{})))
+		@:v = append(v, *@(Model.GetExpandFunctionName(arrayType.Type))(i.([]interface{})))
     }
 	@:}
 	@:return &v

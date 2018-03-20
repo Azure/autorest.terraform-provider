@@ -20,6 +20,13 @@ func @(Model.FunctionName)() *schema.Resource {
 			@:@(new String('\t', indent))"@field.Name": {
             indent++;
 			@:@(new String('\t', indent))Type: @field.Type,
+			@:@(new String('\t', indent))Computed: @field.IsComputed.ToString().ToLowerInvariant(),
+			@:@(new String('\t', indent))Required: @field.IsRequired.ToString().ToLowerInvariant(),
+			@:@(new String('\t', indent))Optional: @((!field.IsRequired).ToString().ToLowerInvariant()),
+			if (field.MaxItems.HasValue)
+			{
+			@:@(new String('\t', indent))MaxItems: @field.MaxItems.Value,
+			}
             if (field.Type == "schema.TypeList")
             {
                 foreach (var sub in field.Subtypes.Skip(1))
@@ -27,6 +34,9 @@ func @(Model.FunctionName)() *schema.Resource {
 			@:@(new String('\t', indent))Elem: &schema.Resource {
                     indent++;
 			@:@(new String('\t', indent))Type: @sub,
+			@:@(new String('\t', indent))Computed: @field.IsComputed.ToString().ToLowerInvariant(),
+			@:@(new String('\t', indent))Required: @field.IsRequired.ToString().ToLowerInvariant(),
+			@:@(new String('\t', indent))Optional: @((!field.IsRequired).ToString().ToLowerInvariant()),
                 }
                 if (field.TerminalType == "complex")
                 {
@@ -38,18 +48,21 @@ func @(Model.FunctionName)() *schema.Resource {
                 else
                 {
 			@:@(new String('\t', indent))Elem: &schema.Schema {
-			@:@(new String('\t', indent))  Type: @field.TerminalType,
+			@:@(new String('\t', indent))	Type: @field.TerminalType,
+			@:@(new String('\t', indent))	Computed: @field.IsComputed.ToString().ToLowerInvariant(),
+			@:@(new String('\t', indent))	Required: @field.IsRequired.ToString().ToLowerInvariant(),
+			@:@(new String('\t', indent))	Optional: @((!field.IsRequired).ToString().ToLowerInvariant()),
 			@:@(new String('\t', indent))},
                 }
-            }
-        }
-        else
-        {
-            if (field.Type == "schema.TypeList")
-            {
-                if (field.TerminalType == "complex")
-                {
-                    indent--;
+			}
+		}
+		else
+		{
+			if (field.Type == "schema.TypeList")
+			{
+				if (field.TerminalType == "complex")
+				{
+					indent--;
 			@:@(new String('\t', indent))},
                     indent--;
 			@:@(new String('\t', indent))},

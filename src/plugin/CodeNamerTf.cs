@@ -10,6 +10,7 @@ namespace AutoRest.Terraform
 
         private const string ResourcePrefix = "Resource Arm ";
         private const string ResourceTypeExpandMethodPrefix = "Expand Arm ";
+        private const string ResourceTypeFlattenMethodPrefix = "Flatten Arm ";
         private const string ResourceCreatePostfix = " Create";
         private const string ResourceReadPostfix = " Read";
         private const string ResourceDeletePostfix = " Delete";
@@ -29,6 +30,7 @@ namespace AutoRest.Terraform
         public virtual string GetResourceDeleteMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceDeletePostfix}");
         public virtual string GetResourceSchemaPropertyName(string name) => (name ?? string.Empty).Underscore();
         public virtual string GetResourceTypeExpandMethodName(string name) => GetGoPrivateMethodName($"{ResourceTypeExpandMethodPrefix}{name ?? string.Empty}");
+        public virtual string GetResourceTypeFlattenMethodName(string name) => GetGoPrivateMethodName($"{ResourceTypeFlattenMethodPrefix}{name ?? string.Empty}");
 
         protected virtual string GetGoPrivateMethodName(string name) => GetMethodName(name).Camelize();
 
