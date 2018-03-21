@@ -6,7 +6,8 @@
     "start": "dotnet bin/netcoreapp2.0/AutoRest.Terraform.dll --server",
     "clean": "gulp clean",
     "build": "gulp build",
-    "build:debug": "gulp build:debug"
+    "build:debug": "gulp build:debug",
+    "samples:hdinsight": "gulp run:hdinsight"
   },
   "repository": {
     "type": "git",
@@ -30,7 +31,8 @@
     "dotnet-sdk-2.0.0": "^1.4.4",
     "gulp": "^3.9.1",
     "gulp-cli": "^2.0.1",
-    "gulp-dotnet-cli": "^1.1.0"
+    "gulp-dotnet-cli": "^1.1.0",
+    "gulp-run": "^1.7.1"
   },
   "dependencies": {
     "dotnet-2.0.0": "^1.4.4"

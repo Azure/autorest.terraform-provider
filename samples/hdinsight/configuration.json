@@ -1,0 +1,33 @@
+{
+    "resourceName": "HD Insight Cluster",
+    "spec": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/hdinsight/resource-manager/Microsoft.HDInsight/preview/2015-03-01-preview/cluster.json",
+    "create": {
+        "method": "HDInsightManagementClient/Clusters/Create",
+        "parameter": {
+            "resourceName": "clusterName",
+            "resourceGroupName": "resourceGroupName",
+            "ignore": ["apiVersion", "subscriptionId"]
+        }
+    },
+    "read": {
+        "method": "HDInsightManagementClient/Clusters/Get",
+        "parameter": {
+            "ignore": ["apiVersion", "subscriptionId"]
+        },
+        "response": {
+            "ignore": ["Id", "Name", "Type", "Location", "Tags", "Etag"]
+        }
+    },
+    "update": {
+        "method": "HDInsightManagementClient/Clusters/Update",
+        "parameter": {
+            "ignore": ["apiVersion", "subscriptionId"]
+        }
+    },
+    "delete": {
+        "method": "HDInsightManagementClient/Clusters/Delete",
+        "parameter": {
+            "ignore": ["apiVersion", "subscriptionId"]
+        }
+    }
+}

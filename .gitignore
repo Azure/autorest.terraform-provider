@@ -290,3 +290,6 @@ __pycache__/
 
 # Visual Studio Code
 .vscode/
+
+# AutoRest generated folder
+samples/**/generated/
