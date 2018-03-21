@@ -1,5 +1,4 @@
 ﻿using AutoRest.Core.Model;
-using AutoRest.Core.Utilities;
 using AutoRest.Extensions;
 using System;
 
@@ -16,13 +15,5 @@ namespace AutoRest.Terraform
 
         public bool IsResourceName { get; set; }
         public bool IsResourceGroupName { get; set; }
-
-        public void AppendToDisplayString(IndentedStringBuilder builder)
-        {
-            builder.AppendLine($"{Qualifier}{(IsResourceName ? "[Name]" : string.Empty)}{(IsResourceGroupName ? "[RGName]" : string.Empty)} \"{this.GetClientName()}\"; Location: {Location}; Type: {ModelType.ToSummaryString()}");
-            builder.Indent();
-            ModelType.AppendToDisplayString(builder);
-            builder.Outdent();
-        }
     }
 }

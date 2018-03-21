@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AutoRest.Core;
+using AutoRest.Core.Model;
 using AutoRest.Extensions;
 using AutoRest.Terraform.Templates;
 
@@ -22,7 +23,7 @@ namespace AutoRest.Terraform
             };
             visitor.PropertyVisited += (s, e) =>
             {
-                if (e.Node.Parent is CompositeTypeTf composite)
+                if (e.Node.Parent is CompositeType composite)
                 {
                     complexTypesToFlatten.Add((
                         composite.Name,

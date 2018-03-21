@@ -18,12 +18,12 @@ namespace AutoRest.Terraform
 
         public override CodeModelTf TransformCodeModel(CodeModel codeModel)
         {
-            var residues = new List<(CompositeType Type, PropertyTf Property)>();
+            var residues = new List<(CompositeType Type, Property Property)>();
             foreach (var r in Method.Responses.Values)
             {
                 if (r.Body is CompositeType composite)
                 {
-                    foreach (var p in composite.ComposedProperties.Cast<PropertyTf>())
+                    foreach (var p in composite.ComposedProperties.Cast<Property>())
                     {
                         foreach (var pattern in IgnoringPatterns)
                         {

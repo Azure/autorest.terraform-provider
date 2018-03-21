@@ -50,8 +50,6 @@ namespace AutoRest.Terraform
             Context = new Context
             {
                 Context,
-                new Factory<CompositeType, CompositeTypeTf>(),
-                new Factory<Property, PropertyTf>(),
                 new Factory<Parameter, ParameterTf>(),
                 new Factory<Method, MethodTf>(),
                 new Factory<MethodGroup, MethodGroupTf>(),
@@ -103,7 +101,7 @@ namespace AutoRest.Terraform
             {
                 var builder = new IndentedStringBuilder("\t");
                 builder.Indent();
-                model.AppendToDisplayString(builder);
+                model.AppendDisplayString(builder);
                 builder.Outdent();
                 Host.ShowMessage(Channel.Information, $"{title}{Environment.NewLine}{builder.ToString()}");
             }

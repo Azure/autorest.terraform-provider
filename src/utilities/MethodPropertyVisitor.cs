@@ -49,23 +49,23 @@ namespace AutoRest.Terraform
         protected virtual void OnResponseVisited(ResponseTf response) => OnVisited(ResponseVisited, response);
 
 
-        private void Visit(PropertyTf root) => Visit(root, GetTypeChildren(root.ModelType), OnPropertyVisiting, Visit, OnPropertyVisited);
-        public event EventHandler<VisitingEventArgs<PropertyTf>> PropertyVisiting;
-        public event EventHandler<VisitedEventArgs<PropertyTf>> PropertyVisited;
-        protected virtual void OnPropertyVisiting(PropertyTf property) => OnVisiting(PropertyVisiting, property);
-        protected virtual void OnPropertyVisited(PropertyTf property) => OnVisited(PropertyVisited, property);
+        private void Visit(Property root) => Visit(root, GetTypeChildren(root.ModelType), OnPropertyVisiting, Visit, OnPropertyVisited);
+        public event EventHandler<VisitingEventArgs<Property>> PropertyVisiting;
+        public event EventHandler<VisitedEventArgs<Property>> PropertyVisited;
+        protected virtual void OnPropertyVisiting(Property property) => OnVisiting(PropertyVisiting, property);
+        protected virtual void OnPropertyVisited(Property property) => OnVisited(PropertyVisited, property);
 
 
         private ModelTypeVisitor ChildrenTypeVisitor { get; }
 
-        private void ChildrenTypeVisitor_ComplexVisited(object sender, VisitedEventArgs<CompositeTypeTf> e)
-            => TypeChildren = e.Node.ComposedProperties.Cast<PropertyTf>();
+        private void ChildrenTypeVisitor_ComplexVisited(object sender, VisitedEventArgs<CompositeType> e)
+            => TypeChildren = e.Node.ComposedProperties;
 
-        private IEnumerable<PropertyTf> TypeChildren { get; set; }
+        private IEnumerable<Property> TypeChildren { get; set; }
 
-        private IEnumerable<PropertyTf> GetTypeChildren(IModelType type)
+        private IEnumerable<Property> GetTypeChildren(IModelType type)
         {
-            TypeChildren = Enumerable.Empty<PropertyTf>();
+            TypeChildren = Enumerable.Empty<Property>();
             ChildrenTypeVisitor.Visit(type);
             return TypeChildren;
         }

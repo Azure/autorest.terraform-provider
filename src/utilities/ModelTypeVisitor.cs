@@ -27,7 +27,7 @@ namespace AutoRest.Terraform
                 case DictionaryType dictionary:
                     Visit(dictionary, dictionary.ValueType, OnStringMapVisiting, Visit, OnStringMapVisited);
                     break;
-                case CompositeTypeTf composite:
+                case CompositeType composite:
                     Visit(composite, OnComplexVisiting, OnComplexVisited);
                     break;
                 default:
@@ -60,9 +60,9 @@ namespace AutoRest.Terraform
         protected virtual void OnStringMapVisited(DictionaryType stringMapType) => OnVisited(StringMapVisited, stringMapType);
 
 
-        public event EventHandler<VisitingEventArgs<CompositeTypeTf>> ComplexVisiting;
-        public event EventHandler<VisitedEventArgs<CompositeTypeTf>> ComplexVisited;
-        protected virtual void OnComplexVisiting(CompositeTypeTf complexType) => OnVisiting(ComplexVisiting, complexType);
-        protected virtual void OnComplexVisited(CompositeTypeTf complexType) => OnVisited(ComplexVisited, complexType);
+        public event EventHandler<VisitingEventArgs<CompositeType>> ComplexVisiting;
+        public event EventHandler<VisitedEventArgs<CompositeType>> ComplexVisited;
+        protected virtual void OnComplexVisiting(CompositeType complexType) => OnVisiting(ComplexVisiting, complexType);
+        protected virtual void OnComplexVisited(CompositeType complexType) => OnVisited(ComplexVisited, complexType);
     }
 }

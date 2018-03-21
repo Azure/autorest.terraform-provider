@@ -23,7 +23,7 @@ namespace AutoRest.Terraform
             };
             visitor.PropertyVisited += (s, e) =>
             {
-                if (e.Node.Parent is CompositeTypeTf composite)
+                if (e.Node.Parent is CompositeType composite)
                 {
                     complexTypesToExpand.Add((
                         composite.Name,
