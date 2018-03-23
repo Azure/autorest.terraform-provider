@@ -67,42 +67,27 @@ namespace AutoRest.Terraform
         public string ResourceName { get; private set; }
 
         [JsonProperty("create")]
-        public MethodDefinition CreateMethod { get; private set; }
+        public IEnumerable<MethodDefinition> CreateMethods { get; private set; }
 
         [JsonProperty("read")]
-        public MethodDefinition ReadMethod { get; private set; }
+        public IEnumerable<MethodDefinition> ReadMethods { get; private set; }
 
         [JsonProperty("update")]
-        public MethodDefinition UpdateMethod { get; private set; }
+        public IEnumerable<MethodDefinition> UpdateMethods { get; private set; }
 
         [JsonProperty("delete")]
-        public MethodDefinition DeleteMethod { get; private set; }
+        public IEnumerable<MethodDefinition> DeleteMethods { get; private set; }
 
         internal sealed class MethodDefinition
         {
             [JsonProperty("method")]
             public string Path { get; private set; }
 
-            [JsonProperty("parameter")]
-            public ParameterDefinition Parameter { get; private set; }
-
-            [JsonProperty("response")]
-            public ResponseDefinition Response { get; private set; }
+            [JsonProperty("schema")]
+            public SchemaDefinition Schema { get; private set; }
         }
 
-        internal sealed class ParameterDefinition
-        {
-            [JsonProperty("resourceName")]
-            public string ResourceName { get; private set; }
-
-            [JsonProperty("resourceGroupName")]
-            public string ResourceGroupName { get; private set; }
-
-            [JsonProperty("ignore")]
-            public IEnumerable<string> Excludes { get; private set; }
-        }
-
-        internal sealed class ResponseDefinition
+        internal sealed class SchemaDefinition
         {
             [JsonProperty("ignore")]
             public IEnumerable<string> Excludes { get; private set; }

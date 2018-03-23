@@ -80,7 +80,6 @@ namespace AutoRest.Terraform
                 if (!Settings.NoProcess)
                 {
                     codeModel = Transformer.TransformCodeModel(codeModel);
-                    DisplayCodeModel("Transformed Code Model", codeModel);
                     await CodeGenerator.Generate(codeModel).ConfigureAwait(false);
                 }
             }
