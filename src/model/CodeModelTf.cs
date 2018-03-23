@@ -6,18 +6,15 @@ namespace AutoRest.Terraform
     public class CodeModelTf
         : CodeModel
     {
-        public string Path => Name;
+        internal List<TfProviderField> TfProviderFields { get; } = new List<TfProviderField>();
 
+        internal List<GoSDKInvocation> CreateInvocations { get; } = new List<GoSDKInvocation>();
 
-        internal IList<TfProviderField> TfProviderFields { get; } = new List<TfProviderField>();
+        internal List<GoSDKInvocation> ReadInvocations { get; } = new List<GoSDKInvocation>();
 
-        internal IList<GoSDKInvocation> CreateInvocations { get; } = new List<GoSDKInvocation>();
+        internal List<GoSDKInvocation> UpdateInvocations { get; } = new List<GoSDKInvocation>();
 
-        internal IList<GoSDKInvocation> ReadInvocations { get; } = new List<GoSDKInvocation>();
-
-        internal IList<GoSDKInvocation> UpdateInvocations { get; } = new List<GoSDKInvocation>();
-
-        internal IList<GoSDKInvocation> DeleteInvocations { get; } = new List<GoSDKInvocation>();
+        internal List<GoSDKInvocation> DeleteInvocations { get; } = new List<GoSDKInvocation>();
 
 
         internal MethodTf CreateMethod { get; set; }

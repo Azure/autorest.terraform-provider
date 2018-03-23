@@ -1,8 +1,6 @@
 ﻿using AutoRest.Core.Model;
-using AutoRest.Core.Utilities;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using static AutoRest.Core.Utilities.DependencyInjection;
 using static AutoRest.Terraform.TfProviderMetadata;
 using static AutoRest.Terraform.Utilities;
@@ -19,36 +17,21 @@ namespace AutoRest.Terraform
         public void Transform(CodeModelTf model)
         {
             var metadata = Singleton<SettingsTf>.Instance.Metadata;
-
-            MethodMatchPatterns.Clear();
-            AddMethodPattern(metadata.CreateMethods, model.CreateInvocations);
-            AddMethodPattern(metadata.ReadMethods, model.ReadInvocations);
-            AddMethodPattern(metadata.UpdateMethods, model.UpdateInvocations);
-            AddMethodPattern(metadata.DeleteMethods, model.DeleteInvocations);
-
-            Traverse(model);
+            model.CreateInvocations.AddRange(FilterByPath(model, metadata.CreateMethods));
+            model.ReadInvocations.AddRange(FilterByPath(model, metadata.ReadMethods));
+            model.UpdateInvocations.AddRange(FilterByPath(model, metadata.UpdateMethods));
+            model.DeleteInvocations.AddRange(FilterByPath(model, metadata.DeleteMethods));
         }
 
-        private void AddMethodPattern(IEnumerable<MethodDefinition> metadata, IList<GoSDKInvocation> target)
-            => metadata.ForEach(m => MethodMatchPatterns.Add((m.Path.AsPropertyPathRegex(), m.Schema, target)));
-
-
-        private IList<(Regex Pattern, SchemaDefinition Metadata, IList<GoSDKInvocation> Target)> MethodMatchPatterns { get; } = new List<(Regex, SchemaDefinition, IList<GoSDKInvocation>)>();
-
-        private void Traverse(CodeModel model) => model.Operations.ForEach(op => Traverse(op, model.Name));
-
-        private void Traverse(MethodGroup group, string path)
+        private IEnumerable<GoSDKInvocation> FilterByPath(CodeModel model, IEnumerable<MethodDefinition> metadata)
         {
-            path += ModelPathSeparator + group.Name;
-            group.Methods.ForEach(m => Traverse(m, path));
-        }
-
-        private void Traverse(Method method, string path)
-        {
-            path += ModelPathSeparator + method.Name;
-            (from mm in MethodMatchPatterns
-             where mm.Pattern.IsMatch(path)
-             select (mm.Metadata, mm.Target)).ForEach(mt => mt.Target.Add(new GoSDKInvocation(method, mt.Metadata)));
+            return from def in metadata
+                   let pattern = def.Path.AsPropertyPathRegex()
+                   from op in model.Operations
+                   from m in op.Methods
+                   let path = string.Join(ModelPathSeparator, model.Name, op.Name, m.Name)
+                   where pattern.IsMatch(path)
+                   select new GoSDKInvocation(m, def.Schema);
         }
 
         /*

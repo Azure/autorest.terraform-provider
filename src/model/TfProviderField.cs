@@ -8,6 +8,8 @@ namespace AutoRest.Terraform
     {
         public string Name { get; }
 
+        public GoSDKTypeChain GoType { get; }
+
         public IList<TfProviderField> SubFields { get; } = new List<TfProviderField>();
     }
 }

@@ -3,7 +3,6 @@ using AutoRest.Core.Model;
 using AutoRest.Core.Utilities;
 using AutoRest.Extensions;
 using System.Collections.Generic;
-using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
@@ -19,7 +18,8 @@ namespace AutoRest.Terraform
         {
             return new ITfProviderTransformer[]
             {
-                new NewInvocationsTransformer()
+                new NewInvocationsTransformer(),
+                new ArgumentsFilterCloneTransformer()
             };
         }
 
@@ -28,7 +28,6 @@ namespace AutoRest.Terraform
             var model = base.TransformCodeModel(codeModel);
             SwaggerExtensions.NormalizeClientModel(model);
             CreateTransformers().ForEach(tr => tr.Transform(model));
-            SwaggerExtensions.NormalizeClientModel(model);
             return model;
         }
     }

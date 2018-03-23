@@ -52,7 +52,6 @@ namespace AutoRest.Terraform
                 Context,
                 new Factory<Parameter, ParameterTf>(),
                 new Factory<Method, MethodTf>(),
-                new Factory<MethodGroup, MethodGroupTf>(),
                 new Factory<CodeModel, CodeModelTf>()
             };
             Host = host;
