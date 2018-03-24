@@ -76,8 +76,6 @@ namespace AutoRest.Terraform
             {
                 case EnumType @enum:
                     return $"{@enum.Name} [{string.Join(",", @enum.Values.Select(v => v.Name))}]";
-                case CompositeType composite:
-                    return $"{composite.Name} {{Properties [{composite.Properties.Count}], ComposedProperties [{composite.ComposedProperties.Count()}]}}";
                 case SequenceType sequence:
                     return $"Array<{sequence.ElementType.ToSummaryString()}>";
                 case DictionaryType dictionary:

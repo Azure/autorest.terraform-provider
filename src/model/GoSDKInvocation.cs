@@ -18,6 +18,6 @@ namespace AutoRest.Terraform
         public SchemaDefinition OriginalMetadata { get; }
 
         public string MethodName => OriginalMethod.Name;
-        public IList<GoSDKTypedData> Arguments { get; } = new List<GoSDKTypedData>();
+        public List<GoSDKTypedData> Arguments { get; } = new List<GoSDKTypedData>();
     }
 }

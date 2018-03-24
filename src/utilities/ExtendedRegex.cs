@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using AutoRest.Core.Model;
+using AutoRest.Extensions;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace AutoRest.Terraform
@@ -10,18 +13,29 @@ namespace AutoRest.Terraform
     {
         public const string ModelPathSeparator = "/", ModelAttributeStart = "[", ModelAttributeEnd = "]";
         public const string ParameterRootPath = "parameter", ResponseRootPath = "response";
-        public const string ResponseHeaderAttribute = ModelAttributeStart + "Header" + ModelAttributeEnd, ResponseBodyAttribute = ModelAttributeStart + "Body" + ModelAttributeEnd;
+        public static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();
+
+
+        public static string ToAttributeString(this object obj) => ModelAttributeStart + obj + ModelAttributeEnd;
+        public static string ExtractLastPath(this string path) => path.Substring(path.LastIndexOf(ModelPathSeparator) + 1);
+
+        public static string ToPathString(this Parameter parameter) => ParameterRootPath + parameter.Location.ToAttributeString() + ModelPathSeparator + parameter.GetClientName();
+        public static string ToPathString(this KeyValuePair<HttpStatusCode, Response> response, bool isHeader)
+            => ResponseRootPath + ((int)response.Key).ToAttributeString() + (isHeader ? ResponseHeaderAttribute : ResponseBodyAttribute);
+        public static string ToPathString(this Property property, string parentPath) => parentPath + ModelPathSeparator + property.GetClientName();
 
 
         private const string ExtensionParamPattern = "[a-zA-Z0-9*]+", ExtensionNameGroup = "extname", ExtensionParamGroup = "extparam";
         private static readonly Regex ExtensionPattern = new Regex($@"\{{:(?<{ExtensionNameGroup}>{ExtensionParamPattern})(:(?<{ExtensionParamGroup}>{ExtensionParamPattern}))*:\}}",
             RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+        private static readonly string AnyParamAttributePattern = Regex.Escape(ModelAttributeStart) + ExtensionParamPattern + Regex.Escape(ModelAttributeEnd);
         private static readonly IDictionary<(string Name, int ParamsCount), string> Replacements = new Dictionary<(string, int), string>
         {
-            { ("*", 0), $@"[^{ModelPathSeparator}]+" },
-            { ("p", 0), $@"{ParameterRootPath}" },
-            { ("p", 1), $@"{ParameterRootPath}\[\{{0\}}\]" },
-            { ("r", 0), $@"{ResponseRootPath}" }
+            { ("*", 0), $@"[^{Regex.Escape(ModelPathSeparator)}]+" },
+            { ("p", 0), $@"{Regex.Escape(ParameterRootPath)}{AnyParamAttributePattern}" },
+            { ("p", 1), $@"{Regex.Escape(ParameterRootPath)}{Regex.Escape(ModelAttributeStart)}{{0}}{Regex.Escape(ModelAttributeEnd)}" },
+            { ("r", 0), $@"{Regex.Escape(ResponseRootPath)}{AnyParamAttributePattern}{{{{2}}}}" }
         };
 
         /// <summary>
