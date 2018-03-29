@@ -9,7 +9,7 @@ namespace AutoRest.Terraform
 {
     internal static partial class Utilities
     {
-        public static void AppendDisplayString(this CodeModel model, IndentedStringBuilder builder)
+        public static void AppendSpecDisplayString(this CodeModel model, IndentedStringBuilder builder)
         {
             builder.AppendLine($"{model.Qualifier} \"{model.Name}\"; Operations [{model.Operations.Count}]");
             builder.Indent();
@@ -17,7 +17,7 @@ namespace AutoRest.Terraform
             builder.Outdent();
         }
 
-        public static void AppendDisplayString(this MethodGroup group, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this MethodGroup group, IndentedStringBuilder builder)
         {
             builder.AppendLine($"{group.Qualifier} \"{group.Name}\"; Type: {group.TypeName}; PropName: {group.NameForProperty}; Methods [{group.Methods.Count}]");
             builder.Indent();
@@ -25,7 +25,7 @@ namespace AutoRest.Terraform
             builder.Outdent();
         }
 
-        public static void AppendDisplayString(this Method method, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this Method method, IndentedStringBuilder builder)
         {
             builder.AppendLine($"{method.Flavor} {method.Qualifier} \"{method.Name}\"; Transformations [{method.InputParameterTransformation.Count}]; Parameters [{method.Parameters.Count}]; Responses [{method.Responses.Count}]");
             builder.Indent();
@@ -37,7 +37,7 @@ namespace AutoRest.Terraform
             builder.Outdent();
         }
 
-        public static void AppendDisplayString(this Parameter parameter, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this Parameter parameter, IndentedStringBuilder builder)
         {
             builder.AppendLine($"{parameter.Location} {parameter.Qualifier} \"{parameter.GetClientName()}\"; Type: {parameter.ModelType.ToSummaryString()}");
             builder.Indent();
@@ -45,7 +45,7 @@ namespace AutoRest.Terraform
             builder.Outdent();
         }
 
-        public static void AppendDisplayString(this Response response, IndentedStringBuilder builder, HttpStatusCode status)
+        private static void AppendDisplayString(this Response response, IndentedStringBuilder builder, HttpStatusCode status)
         {
             var name = $"HTTP {status} ({(int)status})";
             builder.AppendLine($"Response \"HTTP {status} ({(int)status})\" Header: {response.Headers?.ToSummaryString() ?? "None"}, Body: {response.Body?.ToSummaryString() ?? "None"}");
@@ -55,14 +55,14 @@ namespace AutoRest.Terraform
             builder.Outdent();
         }
 
-        public static void AppendDisplayString(this CompositeType composite, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this CompositeType composite, IndentedStringBuilder builder)
         {
             var propertiesSet = new HashSet<Property>(composite.Properties);
             composite.Properties.ForEach(p => p.AppendDisplayString(builder));
             composite.ComposedProperties.Where(p => !propertiesSet.Contains(p)).ForEach(p => p.AppendDisplayString(builder, true));
         }
 
-        public static void AppendDisplayString(this Property property, IndentedStringBuilder builder, bool isComposed = false)
+        private static void AppendDisplayString(this Property property, IndentedStringBuilder builder, bool isComposed = false)
         {
             builder.AppendLine($"{(isComposed ? "Composed " : string.Empty)}{property.Qualifier} \"{property.GetClientName()}\"; Type: {property.ModelType.ToSummaryString()}");
             builder.Indent();
@@ -70,7 +70,7 @@ namespace AutoRest.Terraform
             builder.Outdent();
         }
 
-        public static string ToSummaryString(this IModelType type)
+        private static string ToSummaryString(this IModelType type)
         {
             switch (type)
             {
@@ -85,7 +85,7 @@ namespace AutoRest.Terraform
             }
         }
 
-        public static void AppendDisplayString(this IModelType type, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this IModelType type, IndentedStringBuilder builder)
         {
             switch (type)
             {

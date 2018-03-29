@@ -34,7 +34,7 @@ function getAutoRestCommand(config) {
         '--terraform-provider.metadata-file="' + metadata + '"',
         '--clear-output-folder', '--can-clear-output-folder', '--output-folder="' + output + '"'];
     if (config.displayModel) {
-        commands.push('--terraform-provider.display-model')
+        commands.push('--terraform-provider.display-model=' + config.displayModel);
     }
     return commands.join(' ');
 }

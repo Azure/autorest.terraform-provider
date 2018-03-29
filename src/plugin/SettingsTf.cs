@@ -2,6 +2,7 @@ using AutoRest.Core;
 using AutoRest.Core.Extensibility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace AutoRest.Terraform
 
         public TfProviderMetadata Metadata { get; private set; }
 
-        public bool DisplayModel { get; private set; }
+        public DisplayModelType? DisplayModel { get; private set; }
 
         public bool NoProcess { get; private set; }
 
@@ -39,11 +40,20 @@ namespace AutoRest.Terraform
         {
             StandardSettings.Host = Host;
             StandardSettings.Namespace = await Host.GetValue(NamespaceOption).ConfigureAwait(false);
-            StandardSettings.CustomSettings.Add(nameof(DisplayModel), await Host.GetValue<bool>(DisplayModelOption).ConfigureAwait(false));
             StandardSettings.CustomSettings.Add(nameof(NoProcess), await Host.GetValue<bool>(NoProcessOption).ConfigureAwait(false));
-            Metadata = await TfProviderMetadata.LoadAsync(await Host.GetValue(MetadataFileOption).ConfigureAwait(false), await Host.GetValue(MetadataJsonPathOption).ConfigureAwait(false));
             Settings.PopulateSettings(this, StandardSettings.CustomSettings);
+            Metadata = await TfProviderMetadata.LoadAsync(await Host.GetValue(MetadataFileOption).ConfigureAwait(false), await Host.GetValue(MetadataJsonPathOption).ConfigureAwait(false));
+            DisplayModel = await Host.GetValue<DisplayModelType?>(DisplayModelOption).ConfigureAwait(false);
         }
+    }
+
+    [Flags]
+    internal enum DisplayModelType
+    {
+        Spec = 0b0001,
+        SDK = 0b0010,
+        Schema = 0b0100,
+        All = Spec | SDK | Schema
     }
 
     internal sealed class TfProviderMetadata

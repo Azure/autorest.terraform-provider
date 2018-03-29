@@ -75,12 +75,12 @@ namespace AutoRest.Terraform
             using (Activate())
             {
                 var codeModel = Serializer.Load(inputInJson);
-                DisplayCodeModel("Original Code Model", codeModel);
                 if (!Settings.NoProcess)
                 {
                     codeModel = Transformer.TransformCodeModel(codeModel);
                     await CodeGenerator.Generate(codeModel).ConfigureAwait(false);
                 }
+                DisplayCodeModel(codeModel);
             }
 
             var outFs = Settings.StandardSettings.FileSystemOutput;
@@ -93,15 +93,28 @@ namespace AutoRest.Terraform
             return true;
         }
 
-        private void DisplayCodeModel(string title, CodeModelTf model)
+        private void DisplayCodeModel(CodeModelTf model)
         {
-            if (Settings.DisplayModel)
+            void ShowDisplayMessage(string title, Action<CodeModelTf, IndentedStringBuilder> toDisplayString)
             {
-                var builder = new IndentedStringBuilder("\t");
+                var builder = new IndentedStringBuilder();
                 builder.Indent();
-                model.AppendDisplayString(builder);
+                toDisplayString(model, builder);
                 builder.Outdent();
-                Host.ShowMessage(Channel.Information, $"{title}{Environment.NewLine}{builder.ToString()}");
+                Host.ShowMessage(Channel.Information, title + Environment.NewLine + builder.ToString());
+            }
+
+            if (Settings.DisplayModel?.HasFlag(DisplayModelType.Spec) ?? false)
+            {
+                ShowDisplayMessage("Azure AutoRest Specification", Utilities.AppendSpecDisplayString);
+            }
+            if (Settings.DisplayModel?.HasFlag(DisplayModelType.Schema) ?? false)
+            {
+                ShowDisplayMessage("Terraform Provider Schema", Utilities.AppendSchemaDisplayString);
+            }
+            if (Settings.DisplayModel?.HasFlag(DisplayModelType.SDK) ?? false)
+            {
+                ShowDisplayMessage("Azure Go SDK Invocations", Utilities.AppendInvocationsDisplayString);
             }
         }
     }
