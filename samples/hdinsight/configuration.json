@@ -1,11 +1,15 @@
 {
-    "resourceName": "HD Insight Cluster",
+    "name": "HD Insight Cluster",
     "spec": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/hdinsight/resource-manager/Microsoft.HDInsight/preview/2015-03-01-preview/cluster.json",
     "create": [{
         "method": "HDInsightManagementClient/Clusters/Create",
         "schema": {
             "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
-            "mapping": []
+            "flatten": [{
+                "source": "{:**:}",
+                "target": "/",
+                "priority": 10
+            }]
         }
     }],
     "read": [{

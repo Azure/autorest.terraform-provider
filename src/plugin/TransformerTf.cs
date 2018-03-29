@@ -19,7 +19,8 @@ namespace AutoRest.Terraform
             return new ITfProviderTransformer[]
             {
                 new NewInvocationsTransformer(),
-                new ArgumentsFilterCloneTransformer()
+                new ArgumentsFilterCloneTransformer(),
+                new NewFlattenFieldsTransformer()
             };
         }
 

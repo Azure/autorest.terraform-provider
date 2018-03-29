@@ -9,7 +9,7 @@ namespace AutoRest.Terraform
 {
     /// <summary>
     /// Set <see cref="CodeModelTf.CreateInvocations"/>, <see cref="CodeModelTf.ReadInvocations"/>, <see cref="CodeModelTf.UpdateInvocations"/>
-    /// and <see cref="CodeModelTf.DeleteInvocations"/> based on the filtering information provided in <see cref="MethodDefinition"/>.
+    /// and <see cref="CodeModelTf.DeleteInvocations"/> based on the filtering information provided in <see cref="SchemaDefinition.Excludes"/>.
     /// </summary>
     internal class NewInvocationsTransformer
         : ITfProviderTransformer
@@ -26,10 +26,10 @@ namespace AutoRest.Terraform
         private IEnumerable<GoSDKInvocation> FilterByPath(CodeModel model, IEnumerable<MethodDefinition> metadata)
         {
             return from def in metadata
-                   let pattern = def.Path.AsPropertyPathRegex()
+                   let pattern = def.Path.ToPropertyPathRegex()
                    from op in model.Operations
                    from m in op.Methods
-                   let path = string.Join(ModelPathSeparator, model.Name, op.Name, m.Name)
+                   let path = JoinPathStrings(model.Name, op.Name, m.Name)
                    where pattern.IsMatch(path)
                    select new GoSDKInvocation(m, def.Schema);
         }

@@ -63,7 +63,7 @@ namespace AutoRest.Terraform
         {
         }
 
-        [JsonProperty]
+        [JsonProperty("name")]
         public string ResourceName { get; private set; }
 
         [JsonProperty("create")]
@@ -91,6 +91,33 @@ namespace AutoRest.Terraform
         {
             [JsonProperty("ignore")]
             public IEnumerable<string> Excludes { get; private set; }
+
+            [JsonProperty("flatten")]
+            public IEnumerable<FlattenDefinition> Flattens { get; private set; }
+        }
+
+        internal enum Priority
+            : uint
+        {
+            Lowest = 0,
+            Lower = 15,
+            Low = 30,
+            Normal = 50,
+            High = 70,
+            Higher = 85,
+            Highest = 100
+        }
+
+        internal sealed class FlattenDefinition
+        {
+            [JsonProperty("source")]
+            public string SourcePath { get; private set; }
+
+            [JsonProperty("target")]
+            public string TargetPath { get; private set; }
+
+            [JsonProperty("priority")]
+            public Priority Priority { get; private set; }
         }
     }
 }

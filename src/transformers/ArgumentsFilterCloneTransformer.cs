@@ -24,7 +24,7 @@ namespace AutoRest.Terraform
         private void FilterCloneParametersAndResponses(IEnumerable<GoSDKInvocation> invocations)
         {
             var argsData = from invn in invocations
-                           let ex = invn.OriginalMetadata.Excludes.Select(x => x.AsPropertyPathRegex())
+                           let ex = invn.OriginalMetadata.Excludes.Select(x => x.ToPropertyPathRegex())
                            let pdata = from p in invn.OriginalMethod.LogicalParameters
                                        let path = p.ToPathString()
                                        where ex.All(x => !x.IsMatch(path))
@@ -43,16 +43,16 @@ namespace AutoRest.Terraform
 
         private GoSDKTypedData Clone(string path, IModelType type, IEnumerable<Regex> excludes)
         {
-            var goType = new GoSDKTypeChain(type);
-            if (type is CompositeType composite)
+            var goData = new GoSDKTypedData(path, new GoSDKTypeChain(type));
+            if (goData.GoType.Terminal == GoSDKTerminalTypes.Complex)
             {
-                var children = from p in composite.ComposedProperties
+                var children = from p in goData.GoType.OriginalComplexType.ComposedProperties
                                let subpath = p.ToPathString(path)
                                where excludes.All(x => !x.IsMatch(subpath))
                                select Clone(subpath, p.ModelType, excludes);
-                goType.Properties.AddRange(children);
+                goData.Properties.AddRange(children);
             }
-            return new GoSDKTypedData(path, goType);
+            return goData;
         }
     }
 }

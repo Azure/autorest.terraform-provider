@@ -10,4 +10,13 @@ namespace AutoRest.Terraform
         {
         }
     }
+
+    internal class TypeIncompatibleException
+        : ApplicationException
+    {
+        public TypeIncompatibleException(string message)
+            : base(message)
+        {
+        }
+    }
 }

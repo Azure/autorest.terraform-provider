@@ -1,5 +1,6 @@
 ﻿using AutoRest.Core.Model;
 using AutoRest.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,13 +12,24 @@ namespace AutoRest.Terraform
 {
     internal static partial class Utilities
     {
-        public const string ModelPathSeparator = "/", ModelAttributeStart = "[", ModelAttributeEnd = "]";
-        public const string ParameterRootPath = "parameter", ResponseRootPath = "response";
-        public static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();
+        private const string ModelPathSeparator = "/";
+        private const string AttributeStart = "[", AttributeEnd = "]", ExtensionStart = "{:", ExtensionEnd = ":}";
+        private const string ParameterRootPath = "parameter", ResponseRootPath = "response";
+        private static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();
+
+        private const string AnyPathExtName = "**", AnySinglePathExtName = "*", ParameterExtName = "p", ResponseExtName = "r";
+        private static readonly string AnyPathExtension = AnyPathExtName.ToExtensionString();
 
 
-        public static string ToAttributeString(this object obj) => ModelAttributeStart + obj + ModelAttributeEnd;
+        private static string ToAttributeString(this object obj) => AttributeStart + obj + AttributeEnd;
+        private static string ToExtensionString(this string extension) => ExtensionStart + extension + ExtensionEnd;
+        private static string WrapByFormatBraces(this object content) => $"{{{content}}}";
+        private static string WrapByEscapedBraces(this object content) => $"{{{{{content}}}}}";
+
         public static string ExtractLastPath(this string path) => path.Substring(path.LastIndexOf(ModelPathSeparator) + 1);
+        public static string AppendAnyChildrenPath(this string path) => Regex.Escape(path) + ModelPathSeparator + AnyPathExtension;
+        public static string JoinPathStrings(params string[] paths) => string.Join(ModelPathSeparator, paths);
+        public static string[] SplitPathStrings(this string path) => path.Split(ModelPathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
         public static string ToPathString(this Parameter parameter) => ParameterRootPath + parameter.Location.ToAttributeString() + ModelPathSeparator + parameter.GetClientName();
         public static string ToPathString(this KeyValuePair<HttpStatusCode, Response> response, bool isHeader)
@@ -26,16 +38,18 @@ namespace AutoRest.Terraform
 
 
         private const string ExtensionParamPattern = "[a-zA-Z0-9*]+", ExtensionNameGroup = "extname", ExtensionParamGroup = "extparam";
-        private static readonly Regex ExtensionPattern = new Regex($@"\{{:(?<{ExtensionNameGroup}>{ExtensionParamPattern})(:(?<{ExtensionParamGroup}>{ExtensionParamPattern}))*:\}}",
+        private static readonly Regex ExtensionPattern = new Regex(
+            $@"{Regex.Escape(ExtensionStart)}(?<{ExtensionNameGroup}>{ExtensionParamPattern})(:(?<{ExtensionParamGroup}>{ExtensionParamPattern}))*{Regex.Escape(ExtensionEnd)}",
             RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
-        private static readonly string AnyParamAttributePattern = Regex.Escape(ModelAttributeStart) + ExtensionParamPattern + Regex.Escape(ModelAttributeEnd);
+        private static readonly string AnyParamAttributePattern = Regex.Escape(AttributeStart) + ExtensionParamPattern + Regex.Escape(AttributeEnd);
         private static readonly IDictionary<(string Name, int ParamsCount), string> Replacements = new Dictionary<(string, int), string>
         {
-            { ("*", 0), $@"[^{Regex.Escape(ModelPathSeparator)}]+" },
-            { ("p", 0), $@"{Regex.Escape(ParameterRootPath)}{AnyParamAttributePattern}" },
-            { ("p", 1), $@"{Regex.Escape(ParameterRootPath)}{Regex.Escape(ModelAttributeStart)}{{0}}{Regex.Escape(ModelAttributeEnd)}" },
-            { ("r", 0), $@"{Regex.Escape(ResponseRootPath)}{AnyParamAttributePattern}{{{{2}}}}" }
+            { (AnySinglePathExtName, 0), $@"[^{Regex.Escape(ModelPathSeparator)}]+" },
+            { (AnyPathExtName, 0), $@".*" },
+            { (ParameterExtName, 0), $@"{Regex.Escape(ParameterRootPath)}{AnyParamAttributePattern}" },
+            { (ParameterExtName, 1), $@"{Regex.Escape(ParameterRootPath)}{Regex.Escape(AttributeStart)}{WrapByFormatBraces(0)}{Regex.Escape(AttributeEnd)}" },
+            { (ResponseExtName, 0), $@"{Regex.Escape(ResponseRootPath)}{AnyParamAttributePattern}{WrapByEscapedBraces(2)}" }
         };
 
         /// <summary>
@@ -54,7 +68,7 @@ namespace AutoRest.Terraform
         ///   {:*:}          matches any single path
         ///   {:**:}         matches zero or more paths and subpaths
         /// </remarks>
-        public static Regex AsPropertyPathRegex(this string pattern)
+        public static Regex ToPropertyPathRegex(this string pattern)
         {
             Debug.Assert(!string.IsNullOrEmpty(pattern));
             pattern = ExtensionPattern.Replace(pattern, match =>
