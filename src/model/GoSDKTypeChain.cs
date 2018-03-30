@@ -32,6 +32,7 @@ namespace AutoRest.Terraform
             Debug.Assert(type != null);
             do
             {
+                OriginalTerminalType = type;
                 switch (type)
                 {
                     case PrimaryType primary:
@@ -45,7 +46,6 @@ namespace AutoRest.Terraform
                     case CompositeType composite:
                         type = null;
                         Terminal = GoSDKTerminalTypes.Complex;
-                        OriginalComplexType = composite;
                         break;
                     case SequenceType sequence:
                         type = sequence.ElementType;
@@ -61,7 +61,7 @@ namespace AutoRest.Terraform
 
         public IList<GoSDKNonTerminalTypes> Chain { get; } = new List<GoSDKNonTerminalTypes>();
         public GoSDKTerminalTypes Terminal { get; }
-        public CompositeType OriginalComplexType { get; }
+        public IModelType OriginalTerminalType { get; }
 
 
         public override string ToString() => $"{string.Join(", ", Chain.Select(t => t.ToString()).Concat(Enumerable.Repeat(Terminal.ToString(), 1)))}";

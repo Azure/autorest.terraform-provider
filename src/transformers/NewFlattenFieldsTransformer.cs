@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using static AutoRest.Terraform.Utilities;
-using static AutoRest.Terraform.TfProviderMetadata;
-using AutoRest.Core.Utilities;
 
 namespace AutoRest.Terraform
 {
@@ -19,6 +14,9 @@ namespace AutoRest.Terraform
         public void Transform(CodeModelTf model)
         {
             model.CreateInvocations.ForEach(invn => FlattenFields(invn, model));
+            model.ReadInvocations.ForEach(invn => FlattenFields(invn, model));
+            model.UpdateInvocations.ForEach(invn => FlattenFields(invn, model));
+            model.DeleteInvocations.ForEach(invn => FlattenFields(invn, model));
         }
 
         private List<(uint Priority, Regex Pattern, TfProviderField Target)> FlattenRules { get; } = new List<(uint, Regex, TfProviderField)>();
@@ -32,6 +30,7 @@ namespace AutoRest.Terraform
                                   let t = model.RootField.LocateOrAdd(path)
                                   select ((uint)r.Priority, p, t));
             Walk(invocation.Arguments, model);
+            Walk(invocation.Responses, model);
         }
 
         private void Walk(IList<GoSDKTypedData> parent, CodeModelTf model)
@@ -45,9 +44,10 @@ namespace AutoRest.Terraform
                 var target = matched.Target ?? model.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
                 var field = target.LocateOrAdd(node.Name);
                 field.EnsureType(node.GoType);
+                node.BackingField = field;
                 if (node.GoType.Chain.Any() && node.GoType.Terminal == GoSDKTerminalTypes.Complex)
                 {
-                    FlattenRules.Add((matched.Priority + 1, (Regex.Escape(node.PropertyPath) + "/{:**:}").ToPropertyPathRegex(), field));
+                    FlattenRules.Add((matched.Priority + 1, node.PropertyPath.AppendAnyChildrenPath().ToPropertyPathRegex(), field));
                 }
                 Walk(node.Properties, model);
             }

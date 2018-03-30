@@ -24,7 +24,7 @@ namespace AutoRest.Terraform
         private void FilterCloneParametersAndResponses(IEnumerable<GoSDKInvocation> invocations)
         {
             var argsData = from invn in invocations
-                           let ex = invn.OriginalMetadata.Excludes.Select(x => x.ToPropertyPathRegex())
+                           let ex = invn.OriginalMetadata.Excludes.Select(Utilities.ToPropertyPathRegex)
                            let pdata = from p in invn.OriginalMethod.LogicalParameters
                                        let path = p.ToPathString()
                                        where ex.All(x => !x.IsMatch(path))
@@ -37,8 +37,12 @@ namespace AutoRest.Terraform
                                         let path = rp.ToPathString(false)
                                         where rp.Value.Body != null && ex.All(x => !x.IsMatch(path))
                                         select Clone(path, rp.Value.Body, ex)
-                           select (invn.Arguments, Children: pdata.Concat(rhdata).Concat(rbdata));
-            argsData.ForEach(ac => ac.Arguments.AddRange(ac.Children));
+                           select (invn.Arguments, invn.Responses, ArgChildren: pdata, RespChildren: rhdata.Concat(rbdata));
+            foreach (var (Arguments, Responses, ArgChildren, RespChildren) in argsData)
+            {
+                Arguments.AddRange(ArgChildren);
+                Responses.AddRange(RespChildren);
+            }
         }
 
         private GoSDKTypedData Clone(string path, IModelType type, IEnumerable<Regex> excludes)
@@ -46,7 +50,7 @@ namespace AutoRest.Terraform
             var goData = new GoSDKTypedData(path, new GoSDKTypeChain(type));
             if (goData.GoType.Terminal == GoSDKTerminalTypes.Complex)
             {
-                var children = from p in goData.GoType.OriginalComplexType.ComposedProperties
+                var children = from p in ((CompositeType)goData.GoType.OriginalTerminalType).ComposedProperties
                                let subpath = p.ToPathString(path)
                                where excludes.All(x => !x.IsMatch(subpath))
                                select Clone(subpath, p.ModelType, excludes);

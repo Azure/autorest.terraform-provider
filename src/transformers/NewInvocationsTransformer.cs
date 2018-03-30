@@ -17,13 +17,13 @@ namespace AutoRest.Terraform
         public void Transform(CodeModelTf model)
         {
             var metadata = Singleton<SettingsTf>.Instance.Metadata;
-            model.CreateInvocations.AddRange(FilterByPath(model, metadata.CreateMethods));
-            model.ReadInvocations.AddRange(FilterByPath(model, metadata.ReadMethods));
-            model.UpdateInvocations.AddRange(FilterByPath(model, metadata.UpdateMethods));
-            model.DeleteInvocations.AddRange(FilterByPath(model, metadata.DeleteMethods));
+            model.CreateInvocations.AddRange(FilterByPath(model, metadata.CreateMethods, InvocationCategory.Creation));
+            model.ReadInvocations.AddRange(FilterByPath(model, metadata.ReadMethods, InvocationCategory.Read));
+            model.UpdateInvocations.AddRange(FilterByPath(model, metadata.UpdateMethods, InvocationCategory.Update));
+            model.DeleteInvocations.AddRange(FilterByPath(model, metadata.DeleteMethods, InvocationCategory.Deletion));
         }
 
-        private IEnumerable<GoSDKInvocation> FilterByPath(CodeModel model, IEnumerable<MethodDefinition> metadata)
+        private IEnumerable<GoSDKInvocation> FilterByPath(CodeModel model, IEnumerable<MethodDefinition> metadata, InvocationCategory category)
         {
             return from def in metadata
                    let pattern = def.Path.ToPropertyPathRegex()
@@ -31,7 +31,7 @@ namespace AutoRest.Terraform
                    from m in op.Methods
                    let path = JoinPathStrings(model.Name, op.Name, m.Name)
                    where pattern.IsMatch(path)
-                   select new GoSDKInvocation(m, def.Schema);
+                   select new GoSDKInvocation(m, def.Schema, category);
         }
     }
 }

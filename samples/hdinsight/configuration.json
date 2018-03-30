@@ -15,19 +15,34 @@
     "read": [{
         "method": "HDInsightManagementClient/Clusters/Get",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Etag"]
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Etag"],
+            "flatten": [{
+                "source": "{:**:}",
+                "target": "/",
+                "priority": 10
+            }]
         }
     }],
     "update": [{
         "method": "HDInsightManagementClient/Clusters/Update",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"]
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
+            "flatten": [{
+                "source": "{:**:}",
+                "target": "/",
+                "priority": 10
+            }]
         }
     }],
     "delete": [{
         "method": "HDInsightManagementClient/Clusters/Delete",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"]
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
+            "flatten": [{
+                "source": "{:**:}",
+                "target": "/",
+                "priority": 10
+            }]
         }
     }]
 }

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using static AutoRest.Core.Utilities.DependencyInjection;
+using static AutoRest.Terraform.Utilities;
 
 namespace AutoRest.Terraform
 {
@@ -11,17 +11,19 @@ namespace AutoRest.Terraform
         private const string RootFieldName = "_ROOT_";
 
         public TfProviderField()
-            : this(RootFieldName)
+            : this(null, RootFieldName)
         {
         }
 
-        private TfProviderField(string name)
+        private TfProviderField(TfProviderField parent, string name)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(name));
             Name = name;
+            Parent = parent;
         }
 
-        public string Name { get; }
+        public string Name { get; set; }
+        public string PropertyPath => Parent == null ? string.Empty : JoinPathStrings(Parent.PropertyPath, Name);
         public GoSDKTypeChain GoType { get; private set; }
         public IEnumerable<TfProviderField> SubFields => subFields;
 
@@ -47,16 +49,24 @@ namespace AutoRest.Terraform
             {
                 return this;
             }
+            name = CodeNamer.GetResourceSchemaPropertyName(name);
             if (!subFieldLookup.TryGetValue(name, out int index))
             {
-                index = AddField(new TfProviderField(name));
+                index = AddField(new TfProviderField(this, name));
             }
             return subFields[index].LocateOrAdd(paths.Skip(1));
         }
 
+        public void AddUsedBy(GoSDKInvocation invocation) => usedBy.Add(invocation);
+
+        public void AddUpdatedBy(GoSDKInvocation invocation) => updatedBy.Add(invocation);
+
 
         public override string ToString() => $"{Name}: [{GoType}]";
 
+
+        private TfProviderField Parent { get; }
+        private CodeNamerTf CodeNamer => Singleton<CodeNamerTf>.Instance;
 
         private int AddField(TfProviderField field)
         {
@@ -66,7 +76,8 @@ namespace AutoRest.Terraform
             return index;
         }
 
-        private List<TfProviderField> subFields = new List<TfProviderField>();
-        private Dictionary<string, int> subFieldLookup = new Dictionary<string, int>();
+        private readonly List<TfProviderField> subFields = new List<TfProviderField>();
+        private readonly Dictionary<string, int> subFieldLookup = new Dictionary<string, int>();
+        private readonly ISet<GoSDKInvocation> usedBy = new HashSet<GoSDKInvocation>(), updatedBy = new HashSet<GoSDKInvocation>();
     }
 }
