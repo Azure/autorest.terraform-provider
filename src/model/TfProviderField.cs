@@ -6,13 +6,14 @@ using static AutoRest.Terraform.Utilities;
 
 namespace AutoRest.Terraform
 {
-    internal class TfProviderField
+    public class TfProviderField
     {
         private const string RootFieldName = "_ROOT_";
 
         public TfProviderField()
             : this(null, RootFieldName)
         {
+            GoType = new GoSDKTypeChain(GoSDKTerminalTypes.Complex);
         }
 
         private TfProviderField(TfProviderField parent, string name)

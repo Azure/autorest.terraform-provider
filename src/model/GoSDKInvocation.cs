@@ -4,12 +4,12 @@ using static AutoRest.Terraform.TfProviderMetadata;
 
 namespace AutoRest.Terraform
 {
-    internal enum InvocationCategory
+    public enum InvocationCategory
     {
         Creation, Read, Update, Deletion
     }
 
-    internal class GoSDKInvocation
+    public class GoSDKInvocation
     {
         public GoSDKInvocation(Method method, SchemaDefinition metadata, InvocationCategory category)
         {

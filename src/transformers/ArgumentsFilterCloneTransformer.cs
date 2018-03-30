@@ -28,15 +28,15 @@ namespace AutoRest.Terraform
                            let pdata = from p in invn.OriginalMethod.LogicalParameters
                                        let path = p.ToPathString()
                                        where ex.All(x => !x.IsMatch(path))
-                                       select Clone(path, p.ModelType, ex)
+                                       select Clone(invn, path, p.ModelType, ex)
                            let rhdata = from rp in invn.OriginalMethod.Responses
                                         let path = rp.ToPathString(true)
                                         where rp.Value.Headers != null && ex.All(x => !x.IsMatch(path))
-                                        select Clone(path, rp.Value.Headers, ex)
+                                        select Clone(invn, path, rp.Value.Headers, ex)
                            let rbdata = from rp in invn.OriginalMethod.Responses
                                         let path = rp.ToPathString(false)
                                         where rp.Value.Body != null && ex.All(x => !x.IsMatch(path))
-                                        select Clone(path, rp.Value.Body, ex)
+                                        select Clone(invn, path, rp.Value.Body, ex)
                            select (invn.Arguments, invn.Responses, ArgChildren: pdata, RespChildren: rhdata.Concat(rbdata));
             foreach (var (Arguments, Responses, ArgChildren, RespChildren) in argsData)
             {
@@ -45,15 +45,15 @@ namespace AutoRest.Terraform
             }
         }
 
-        private GoSDKTypedData Clone(string path, IModelType type, IEnumerable<Regex> excludes)
+        private GoSDKTypedData Clone(GoSDKInvocation invocation, string path, IModelType type, IEnumerable<Regex> excludes)
         {
-            var goData = new GoSDKTypedData(path, new GoSDKTypeChain(type));
+            var goData = new GoSDKTypedData(invocation, path, new GoSDKTypeChain(type));
             if (goData.GoType.Terminal == GoSDKTerminalTypes.Complex)
             {
                 var children = from p in ((CompositeType)goData.GoType.OriginalTerminalType).ComposedProperties
                                let subpath = p.ToPathString(path)
                                where excludes.All(x => !x.IsMatch(subpath))
-                               select Clone(subpath, p.ModelType, excludes);
+                               select Clone(invocation, subpath, p.ModelType, excludes);
                 goData.Properties.AddRange(children);
             }
             return goData;

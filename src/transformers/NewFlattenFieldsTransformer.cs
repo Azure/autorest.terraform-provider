@@ -29,11 +29,11 @@ namespace AutoRest.Terraform
                                   let path = r.TargetPath.SplitPathStrings()
                                   let t = model.RootField.LocateOrAdd(path)
                                   select ((uint)r.Priority, p, t));
-            Walk(invocation.Arguments, model);
-            Walk(invocation.Responses, model);
+            Walk(invocation.Arguments, model, false);
+            Walk(invocation.Responses, model, true);
         }
 
-        private void Walk(IList<GoSDKTypedData> parent, CodeModelTf model)
+        private void Walk(IList<GoSDKTypedData> parent, CodeModelTf model, bool isInResponse)
         {
             foreach (var node in parent)
             {
@@ -44,12 +44,12 @@ namespace AutoRest.Terraform
                 var target = matched.Target ?? model.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
                 var field = target.LocateOrAdd(node.Name);
                 field.EnsureType(node.GoType);
-                node.BackingField = field;
+                node.UpdateBackingField(field, isInResponse);
                 if (node.GoType.Chain.Any() && node.GoType.Terminal == GoSDKTerminalTypes.Complex)
                 {
                     FlattenRules.Add((matched.Priority + 1, node.PropertyPath.AppendAnyChildrenPath().ToPropertyPathRegex(), field));
                 }
-                Walk(node.Properties, model);
+                Walk(node.Properties, model, isInResponse);
             }
         }
     }

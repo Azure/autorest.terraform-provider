@@ -1,5 +1,6 @@
 ﻿using AutoRest.Core;
 using AutoRest.Core.Model;
+using AutoRest.Core.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,10 @@ namespace AutoRest.Terraform
     {
         private IEnumerable<ITfProviderGenerator> CreateGenerators()
         {
+            return new ITfProviderGenerator[] 
+            {
+                new SchemaGenerator()
+            };
             /*
             var expandGenerator = new TypeExpandGenerator();
             var flattenGenerator = new TypeFlattenGenerator();
@@ -38,7 +43,6 @@ namespace AutoRest.Terraform
             yield return expandGenerator;
             yield return flattenGenerator;
             */
-            yield break;
         }
 
         public override string ImplementationFileExtension => ".go";
@@ -48,12 +52,8 @@ namespace AutoRest.Terraform
         public override async Task Generate(CodeModel codeModel)
         {
             await base.Generate(codeModel).ConfigureAwait(false);
-            var generators = new List<ITfProviderGenerator>();
-            foreach (var generator in CreateGenerators())
-            {
-                generator.Generate((CodeModelTf)codeModel);
-                generators.Add(generator);
-            }
+            var generators = CreateGenerators();
+            generators.ForEach(gen => gen.Generate((CodeModelTf)codeModel));
             var templateGroups = generators.ToLookup(gen => gen.FileName, gen => gen.CreateTempalte());
             foreach (var templateGroup in templateGroups)
             {

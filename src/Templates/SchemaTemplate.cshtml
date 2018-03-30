@@ -1,85 +1,31 @@
-@using AutoRest.Core
 @using AutoRest.Terraform
-@using System
-@using System.Linq;
-@inherits Template<SchemaGenerator>
+@using AutoRest.Terraform.Templates
+@using System.Diagnostics
+@inherits TfProviderTemplateBase<TfProviderField>
 
-func @(Model.FunctionName)() *schema.Resource {
-	return &schema.Resource {
-		Create: @Model.CreateFunctionName,
-		Read:   @Model.ReadFunctionName,
-		Update: @Model.UpdateFunctionName,
-		Delete: @Model.DeleteFunctionName,
-
-		Schema: map[string]*schema.Schema {
 @{
-    var indent = 0;
-    foreach (var field in Model.Fields)
+    Debug.Assert(Model.GoType.Terminal == GoSDKTerminalTypes.Complex);
+}
+
+@{
+
+@:@(Indentation)Schema: map[string]*schema.Schema {
+
+    Indentation.Indent();
+    foreach (var subField in Model.SubFields)
     {
-        if (field.IsFirstOccurrence)
+
+@:@(Indentation)Name: @subField.Name
+
+        if (subField.GoType.Terminal == GoSDKTerminalTypes.Complex)
         {
-			@:@(new String('\t', indent))"@field.Name": {
-            indent++;
-			@:@(new String('\t', indent))Type: @field.Type,
-			@:@(new String('\t', indent))Computed: @field.IsComputed.ToString().ToLowerInvariant(),
-			@:@(new String('\t', indent))Required: @field.IsRequired.ToString().ToLowerInvariant(),
-			@:@(new String('\t', indent))Optional: @((!field.IsRequired).ToString().ToLowerInvariant()),
-			if (field.MaxItems.HasValue)
-			{
-			@:@(new String('\t', indent))MaxItems: @field.MaxItems.Value,
-			}
-            if (field.Type == "schema.TypeList")
-            {
-                foreach (var sub in field.Subtypes.Skip(1))
-                {
-			@:@(new String('\t', indent))Elem: &schema.Resource {
-                    indent++;
-			@:@(new String('\t', indent))Type: @sub,
-			@:@(new String('\t', indent))Computed: @field.IsComputed.ToString().ToLowerInvariant(),
-			@:@(new String('\t', indent))Required: @field.IsRequired.ToString().ToLowerInvariant(),
-			@:@(new String('\t', indent))Optional: @((!field.IsRequired).ToString().ToLowerInvariant()),
-                }
-                if (field.TerminalType == "complex")
-                {
-			@:@(new String('\t', indent))Elem: &schema.Resource {
-                    indent++;
-			@:@(new String('\t', indent))Schema: map[string]*schema.Schema {
-                    indent++;
-                }
-                else
-                {
-			@:@(new String('\t', indent))Elem: &schema.Schema {
-			@:@(new String('\t', indent))	Type: @field.TerminalType,
-			@:@(new String('\t', indent))	Computed: @field.IsComputed.ToString().ToLowerInvariant(),
-			@:@(new String('\t', indent))	Required: @field.IsRequired.ToString().ToLowerInvariant(),
-			@:@(new String('\t', indent))	Optional: @((!field.IsRequired).ToString().ToLowerInvariant()),
-			@:@(new String('\t', indent))},
-                }
-			}
-		}
-		else
-		{
-			if (field.Type == "schema.TypeList")
-			{
-				if (field.TerminalType == "complex")
-				{
-					indent--;
-			@:@(new String('\t', indent))},
-                    indent--;
-			@:@(new String('\t', indent))},
-                }
-                foreach (var sub in field.Subtypes.Skip(1))
-                {
-                    indent--;
-			@:@(new String('\t', indent))},
-                }
-            }
-            indent--;
-			@:@(new String('\t', indent))},
+
+@:@Include(new SchemaTemplate { Indentation = Indentation }, subField)
+
         }
     }
+    Indentation.Outdent();
+
+@:@(Indentation)}
+
 }
-		},
-	}
-}
-@EmptyLine

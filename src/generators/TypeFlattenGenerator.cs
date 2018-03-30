@@ -21,38 +21,6 @@ namespace AutoRest.Terraform
             {
                 SkipParameter = true
             };
-            visitor.PropertyVisited += (s, e) =>
-            {
-                if (e.Node.Parent is CompositeType composite)
-                {
-                    complexTypesToFlatten.Add((
-                        composite.Name,
-                        e.Node.GetClientName(),
-                        CodeNamer.GetResourceSchemaPropertyName(e.Node.GetClientName()),
-                        e.Node.ModelTypeName,
-                        SchemaGenerator.GetGoTypeFromModelType(e.Node.ModelType)));
-                }
-                if (SchemaGenerator.GetGoTypeFromModelType(e.Node.ModelType) == "ARRAY")
-                {
-                    var type = "string";
-                    var typeVisitor = new ModelTypeVisitor();
-                    typeVisitor.ComplexVisited += (s2, e2) => type = e2.Node.Name;
-                    typeVisitor.Visit(e.Node.ModelType);
-                    ArrayTypesToFlatten.Add((
-                        e.Node.GetClientName(),
-                        type));
-                }
-                if (SchemaGenerator.GetGoTypeFromModelType(e.Node.ModelType) == "MAP")
-                {
-                    var type = "string";
-                    var typeVisitor = new ModelTypeVisitor();
-                    typeVisitor.ComplexVisited += (s2, e2) => type = e2.Node.Name;
-                    typeVisitor.Visit(e.Node.ModelType);
-                    MapTypesToFlatten.Add((
-                        e.Node.GetClientName(),
-                        type));
-                }
-            };
             visitor.Visit(CodeModel.ReadMethod);
             ComplexTypesToFlatten = complexTypesToFlatten.ToLookup(t => t.Type, t => (t.ChildName, t.ChildTfName, t.ChildType, t.ChildGoType));
         }

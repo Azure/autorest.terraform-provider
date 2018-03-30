@@ -10,7 +10,7 @@ using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
-    internal class SettingsTf
+    public class SettingsTf
         : IGeneratorSettings
     {
         private const string NamespaceOption = "namespace";
@@ -48,7 +48,7 @@ namespace AutoRest.Terraform
     }
 
     [Flags]
-    internal enum DisplayModelType
+    public enum DisplayModelType
     {
         Spec = 0b0001,
         SDK = 0b0010,
@@ -56,7 +56,7 @@ namespace AutoRest.Terraform
         All = Spec | SDK | Schema
     }
 
-    internal sealed class TfProviderMetadata
+    public sealed class TfProviderMetadata
     {
         public static async Task<TfProviderMetadata> LoadAsync(string filename, string jsonpath)
         {
@@ -88,7 +88,7 @@ namespace AutoRest.Terraform
         [JsonProperty("delete")]
         public IEnumerable<MethodDefinition> DeleteMethods { get; private set; }
 
-        internal sealed class MethodDefinition
+        public sealed class MethodDefinition
         {
             [JsonProperty("method")]
             public string Path { get; private set; }
@@ -97,7 +97,7 @@ namespace AutoRest.Terraform
             public SchemaDefinition Schema { get; private set; }
         }
 
-        internal sealed class SchemaDefinition
+        public sealed class SchemaDefinition
         {
             [JsonProperty("ignore")]
             public IEnumerable<string> Excludes { get; private set; }
@@ -106,7 +106,7 @@ namespace AutoRest.Terraform
             public IEnumerable<FlattenDefinition> Flattens { get; private set; }
         }
 
-        internal enum Priority
+        public enum Priority
             : uint
         {
             Lowest = 0,
@@ -118,7 +118,7 @@ namespace AutoRest.Terraform
             Highest = 100
         }
 
-        internal sealed class FlattenDefinition
+        public sealed class FlattenDefinition
         {
             [JsonProperty("source")]
             public string SourcePath { get; private set; }

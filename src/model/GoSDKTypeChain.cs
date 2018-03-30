@@ -6,17 +6,17 @@ using System.Linq;
 
 namespace AutoRest.Terraform
 {
-    internal enum GoSDKTerminalTypes
+    public enum GoSDKTerminalTypes
     {
         Boolean, Int32, String, Enum, Complex
     }
 
-    internal enum GoSDKNonTerminalTypes
+    public enum GoSDKNonTerminalTypes
     {
         Array, StringMap
     }
 
-    internal class GoSDKTypeChain
+    public class GoSDKTypeChain
         : IEquatable<GoSDKTypeChain>
     {
         private static readonly IDictionary<KnownPrimaryType, GoSDKTerminalTypes> PrimaryTypeMapping = new Dictionary<KnownPrimaryType, GoSDKTerminalTypes>
@@ -26,6 +26,8 @@ namespace AutoRest.Terraform
             { KnownPrimaryType.String, GoSDKTerminalTypes.String },
             { KnownPrimaryType.Object, GoSDKTerminalTypes.String }
         };
+
+        public GoSDKTypeChain(GoSDKTerminalTypes terminal) => Terminal = terminal;
 
         public GoSDKTypeChain(IModelType type)
         {
