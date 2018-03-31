@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AutoRest.Core;
+﻿using AutoRest.Core;
 using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
@@ -18,7 +15,7 @@ namespace AutoRest.Terraform
         protected CodeModelTf CodeModel { get; private set; }
 
         public string ResourceName => Settings.Metadata.ResourceName;
-        public string GoSDKClientName => CodeNamer.GetAzureGoSDKClientName(ResourceName);
+        public string AzureRmResourceName => CodeNamer.GetAzureRmResourceName(ResourceName);
 
         public ITemplate CreateTemplate() => new TTemplate
         {
@@ -30,5 +27,16 @@ namespace AutoRest.Terraform
         {
             CodeModel = model;
         }
+    }
+
+    public abstract class TfFunctionGeneratorBase<TTemplate, TGenerator>
+        : TfGeneratorBase<TTemplate, TGenerator>
+        where TTemplate : TfProviderTemplateBase<TGenerator>, new()
+        where TGenerator : TfGeneratorBase<TTemplate, TGenerator>
+    {
+        public string GoSDKClientName => CodeNamer.GetAzureGoSDKClientName(ResourceName);
+        public string FunctionName => CodeNamer.GetGoPrivateMethodName(CodeNamer.JoinNonEmpty(AzureRmResourceName, FunctionNamePostfix));
+
+        protected abstract string FunctionNamePostfix { get; }
     }
 }

@@ -1,6 +1,13 @@
 {
     "name": "HD Insight Cluster",
     "spec": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/hdinsight/resource-manager/Microsoft.HDInsight/preview/2015-03-01-preview/cluster.json",
+    "imports": {
+        "fmt": "fmt",
+        "log": "log",
+        "net/http": "net/http",
+        "strings": "strings",
+        "schema": "github.com/hashicorp/terraform/helper/schema"
+    },
     "create": [{
         "method": "HDInsightManagementClient/Clusters/Create",
         "schema": {

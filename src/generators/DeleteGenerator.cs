@@ -4,8 +4,8 @@ using AutoRest.Terraform.Templates;
 namespace AutoRest.Terraform
 {
     public class DeleteGenerator
-        : TfGeneratorBase<DeleteTemplate, DeleteGenerator>
+        : TfFunctionGeneratorBase<DeleteTemplate, DeleteGenerator>
     {
-        public string FunctionName => CodeNamer.GetResourceDeleteMethodName(ResourceName);
+        protected override string FunctionNamePostfix => "Delete";
     }
 }

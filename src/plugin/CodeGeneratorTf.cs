@@ -22,18 +22,18 @@ namespace AutoRest.Terraform
         /// But it will be put into another position you specified in the target file.
         /// </summary>
         /// <returns>The generators as well as its target file name and position in file.</returns>
-        private IEnumerable<(ITfProviderGenerator Generator, string TargetFile, uint PositionInFile)> CreateGeneratorDescriptors()
+        private IEnumerable<(ITfProviderGenerator Generator, uint ExecutionNumber, string TargetFile, uint PositionInFile)> CreateGeneratorDescriptors()
         {
             var resourceName = Settings.Metadata.ResourceName;
             var resourceFileName = CodeNamer.GetResourceFileName(resourceName) + ImplementationFileExtension;
-            return new (ITfProviderGenerator, string, uint)[]
+            return new (ITfProviderGenerator, uint, string, uint)[]
             {
-                (new SchemaGenerator(), resourceFileName, 1),
-                (new CreateGenerator(), resourceFileName, 2),
-                (new ReadGenerator(), resourceFileName, 3),
-                (new UpdateGenerator(), resourceFileName, 4),
-                (new DeleteGenerator(), resourceFileName, 5),
-                (new ImportsGenerator(), resourceFileName, 0),
+                (new ImportsGenerator(), 1, resourceFileName, 0),
+                (new SchemaGenerator(), 0, resourceFileName, 1),
+                (new CreateGenerator(), 0, resourceFileName, 2),
+                (new ReadGenerator(), 0, resourceFileName, 3),
+                (new UpdateGenerator(), 0, resourceFileName, 4),
+                (new DeleteGenerator(), 0, resourceFileName, 5),
             };
         }
 
@@ -60,13 +60,20 @@ namespace AutoRest.Terraform
                         {
                             FileName = fg.Key,
                             Contents = from d in fg
-                                       orderby d.PositionInFile
-                                       select d.Generator.CreateTemplate().ToString()
+                                       orderby d.ExecutionNumber
+                                       select new
+                                       {
+                                           Position = d.PositionInFile,
+                                           Content = d.Generator.CreateTemplate().ToString()
+                                       }
                         };
 
             foreach (var file in files)
             {
-                await Write(string.Concat(file.Contents), file.FileName).ConfigureAwait(false);
+                var allContent = string.Concat(from ct in file.Contents
+                                               orderby ct.Position
+                                               select ct.Content);
+                await Write(allContent, file.FileName).ConfigureAwait(false);
             }
         }
     }

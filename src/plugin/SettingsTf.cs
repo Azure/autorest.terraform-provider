@@ -76,6 +76,9 @@ namespace AutoRest.Terraform
         [JsonProperty("name")]
         public string ResourceName { get; private set; }
 
+        [JsonProperty("imports")]
+        public IDictionary<string, string> ImportCandidates { get; private set; }
+
         [JsonProperty("create")]
         public IEnumerable<MethodDefinition> CreateMethods { get; private set; }
 

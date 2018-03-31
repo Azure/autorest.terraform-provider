@@ -2,15 +2,9 @@
 @using AutoRest.Terraform.Templates
 @using System.Diagnostics
 @inherits TfProviderTemplateBase<TfProviderField>
-
+@(Indentation)Schema: map[string]*schema.Schema {
 @{
     Debug.Assert(Model.GoType.Terminal == GoSDKTerminalTypes.Complex);
-}
-
-@{
-
-@:@(Indentation)Schema: map[string]*schema.Schema {
-
     Indentation.Indent();
     foreach (var subField in Model.SubFields)
     {
@@ -25,7 +19,5 @@
         }
     }
     Indentation.Outdent();
-
-@:@(Indentation)}
-
 }
+@(Indentation)},

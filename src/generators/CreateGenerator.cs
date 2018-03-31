@@ -9,8 +9,8 @@ using System.Text;
 namespace AutoRest.Terraform
 {
     public class CreateGenerator
-        : TfGeneratorBase<CreateTemplate, CreateGenerator>
+        : TfFunctionGeneratorBase<CreateTemplate, CreateGenerator>
     {
-        public string FunctionName => CodeNamer.GetResourceCreateMethodName(ResourceName);
+        protected override string FunctionNamePostfix => "Create";
     }
 }

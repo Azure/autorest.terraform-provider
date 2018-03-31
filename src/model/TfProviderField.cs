@@ -50,7 +50,7 @@ namespace AutoRest.Terraform
             {
                 return this;
             }
-            name = CodeNamer.GetResourceSchemaPropertyName(name);
+            name = CodeNamer.GetAzureRmSchemaName(name);
             if (!subFieldLookup.TryGetValue(name, out int index))
             {
                 index = AddField(new TfProviderField(this, name));

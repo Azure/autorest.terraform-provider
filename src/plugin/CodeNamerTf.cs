@@ -1,41 +1,29 @@
 ﻿using AutoRest.Core;
 using Humanizer;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AutoRest.Terraform
 {
     public class CodeNamerTf
         : CodeNamer
     {
-        private const string FieldNameEscapedPostfix = " Field";
+        public override string GetFieldName(string name) => GetEscapedReservedName(TitleUnderscoreCase(name), "_field").Camelize();
 
-        private const string ResourcePrefix = "Resource Arm ";
-        private const string ResourceTypeExpandMethodPrefix = "Expand Arm ";
-        private const string ResourceTypeFlattenMethodPrefix = "Flatten Arm ";
-        private const string ResourceCreatePostfix = " Create";
-        private const string ResourceReadPostfix = " Read";
-        private const string ResourceUpdatePostfix = " Update";
-        private const string ResourceDeletePostfix = " Delete";
+        public virtual string ExtractAliasFromGoPackage(string package) => package.Substring(package.LastIndexOf('/') + 1);
+        public virtual string GetGoPrivateMethodName(string name) => GetMethodName(name).Camelize();
 
-        private const string AzureGoSDKClientPostfix = " Client";
+        public virtual string GetAzureGoSDKClientName(string name) => GetFieldName(JoinNonEmpty(name, "Client"));
+        public virtual string GetAzureGoSDKIdPathName(string name) => name.ToLowerInvariant();
+
+        public virtual string GetAzureRmResourceName(string name) => JoinNonEmpty("Resource Arm", name);
+        public virtual string GetAzureRmSchemaName(string name) => name.Underscore();
+
+        public virtual string GetResourceFileName(string name) => TitleUnderscoreCase(GetAzureRmResourceName(name));
 
 
-        public override string GetFieldName(string name) => GetEscapedReservedName(TitleUnderscoreCase(name), FieldNameEscapedPostfix).Camelize();
-
-        public virtual string GetAzureGoSDKClientName(string name) => GetFieldName($"{name ?? string.Empty}{AzureGoSDKClientPostfix}");
-        public virtual string GetAzureGoSDKIdPathName(string name) => (name ?? string.Empty).ToLowerInvariant();
-
-        public virtual string GetResourceFileName(string name) => TitleUnderscoreCase($"{ResourcePrefix}{name ?? string.Empty}");
-        public virtual string GetResourceDefinitionMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}");
-        public virtual string GetResourceCreateMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceCreatePostfix}");
-        public virtual string GetResourceReadMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceReadPostfix}");
-        public virtual string GetResourceUpdateMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceUpdatePostfix}");
-        public virtual string GetResourceDeleteMethodName(string name) => GetGoPrivateMethodName($"{ResourcePrefix}{name ?? string.Empty}{ResourceDeletePostfix}");
-        public virtual string GetResourceSchemaPropertyName(string name) => (name ?? string.Empty).Underscore();
-        public virtual string GetResourceTypeExpandMethodName(string name) => GetGoPrivateMethodName($"{ResourceTypeExpandMethodPrefix}{name ?? string.Empty}");
-        public virtual string GetResourceTypeFlattenMethodName(string name) => GetGoPrivateMethodName($"{ResourceTypeFlattenMethodPrefix}{name ?? string.Empty}");
-
-        protected virtual string GetGoPrivateMethodName(string name) => GetMethodName(name).Camelize();
-
+        public string JoinNonEmpty(params string[] items) => JoinNonEmpty((IEnumerable<string>)items);
+        public virtual string JoinNonEmpty(IEnumerable<string> items) => string.Join(" ", items.Where(i => !string.IsNullOrEmpty(i)));
         protected virtual string TitleUnderscoreCase(string name) => name.ToLowerInvariant().Titleize().Underscore();
     }
 }

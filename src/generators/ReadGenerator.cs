@@ -9,8 +9,8 @@ using AutoRest.Terraform.Templates;
 namespace AutoRest.Terraform
 {
     public class ReadGenerator
-        : TfGeneratorBase<ReadTemplate, ReadGenerator>
+        : TfFunctionGeneratorBase<ReadTemplate, ReadGenerator>
     {
-        public string FunctionName => CodeNamer.GetResourceReadMethodName(ResourceName);
+        protected override string FunctionNamePostfix => "Read";
     }
 }

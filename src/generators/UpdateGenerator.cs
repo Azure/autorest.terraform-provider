@@ -9,8 +9,8 @@ using AutoRest.Terraform.Templates;
 namespace AutoRest.Terraform
 {
     public class UpdateGenerator
-        : TfGeneratorBase<UpdateTemplate, UpdateGenerator>
+        : TfFunctionGeneratorBase<UpdateTemplate, UpdateGenerator>
     {
-        public string FunctionName => CodeNamer.GetResourceUpdateMethodName(ResourceName);
+        protected override string FunctionNamePostfix => "Update";
     }
 }

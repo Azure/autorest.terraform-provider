@@ -1,6 +1,25 @@
 ﻿@using AutoRest.Terraform
 @using AutoRest.Terraform.Templates
-@using System.Diagnostics
 @inherits TfProviderTemplateBase<SchemaGenerator>
+func @(Model.FunctionName)() *@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+@{
+    Indentation.Indent();
 
-Generate Schema Here.
+@:@(Indentation)return &@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+
+    Indentation.Indent();
+
+@:@(Indentation)Create: @(OtherModel<CreateGenerator>().FunctionName),
+@:@(Indentation)Read:   @(OtherModel<ReadGenerator>().FunctionName),
+@:@(Indentation)Update: @(OtherModel<UpdateGenerator>().FunctionName),
+@:@(Indentation)Delete: @(OtherModel<DeleteGenerator>().FunctionName),
+@:@(Include<SchemaFieldsSubTemplate, TfProviderField>(Model.RootField))
+
+    Indentation.Outdent();
+
+@:@(Indentation)}
+
+    Indentation.Outdent();
+}
+}
+@EmptyLine

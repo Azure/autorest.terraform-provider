@@ -1,12 +1,20 @@
-@using AutoRest.Core
-@using AutoRest.Core.Utilities
 @using AutoRest.Terraform
 @inherits TfProviderTemplateBase<ImportsGenerator>
 
 package @Model.PackageName
 
-@Header(string.Empty)
+@Header("// ")
 
 import (
+@{ 
+    Indentation.Indent();
+    foreach (var reference in Model.References)
+    {
+
+@:@(Indentation)@(string.IsNullOrEmpty(reference.Alias) ? string.Empty : reference.Alias + " ")"@reference.Package"
+
+    }
+    Indentation.Outdent();
+}
 )
 @EmptyLine
