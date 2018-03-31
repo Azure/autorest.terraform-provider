@@ -2,9 +2,7 @@
 using AutoRest.Core.Model;
 using AutoRest.Core.Utilities;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using static AutoRest.Core.Utilities.DependencyInjection;
 
@@ -12,38 +10,37 @@ namespace AutoRest.Terraform
 {
     internal interface ITfProviderGenerator
     {
-        string FileName { get; }
-        void Generate(CodeModelTf model);
-        ITemplate CreateTempalte();
+        void Preprocess(CodeModelTf model);
+        ITemplate CreateTemplate();
     }
 
     internal sealed class CodeGeneratorTf
         : CodeGenerator
     {
-        private IEnumerable<ITfProviderGenerator> CreateGenerators()
+        /// <summary>
+        /// The sequence is critical: the templates will be executed in the order of the returned list.
+        /// But it will be put into another position you specified in the target file.
+        /// </summary>
+        /// <returns>The generators as well as its target file name and position in file.</returns>
+        private IEnumerable<(ITfProviderGenerator Generator, string TargetFile, uint PositionInFile)> CreateGeneratorDescriptors()
         {
-            return new ITfProviderGenerator[] 
+            var resourceName = Settings.Metadata.ResourceName;
+            var resourceFileName = CodeNamer.GetResourceFileName(resourceName) + ImplementationFileExtension;
+            return new (ITfProviderGenerator, string, uint)[]
             {
-                new SchemaGenerator()
+                (new SchemaGenerator(), resourceFileName, 1),
+                (new CreateGenerator(), resourceFileName, 2),
+                (new ReadGenerator(), resourceFileName, 3),
+                (new UpdateGenerator(), resourceFileName, 4),
+                (new DeleteGenerator(), resourceFileName, 5),
+                (new ImportsGenerator(), resourceFileName, 0),
             };
-            /*
-            var expandGenerator = new TypeExpandGenerator();
-            var flattenGenerator = new TypeFlattenGenerator();
-            var readGenerator = new ReadGenerator();
-            var createGenerator = new CreateGenerator(readGenerator, expandGenerator);
-            var updateGenerator = new UpdateGenerator(readGenerator);
-            var deleteGenerator = new DeleteGenerator();
-
-            yield return new ImportsGenerator();
-            yield return new SchemaGenerator(createGenerator, readGenerator, updateGenerator, deleteGenerator);
-            yield return createGenerator;
-            yield return readGenerator;
-            yield return updateGenerator;
-            yield return deleteGenerator;
-            yield return expandGenerator;
-            yield return flattenGenerator;
-            */
         }
+
+
+        private SettingsTf Settings => Singleton<SettingsTf>.Instance;
+        private CodeNamerTf CodeNamer => Singleton<CodeNamerTf>.Instance;
+
 
         public override string ImplementationFileExtension => ".go";
 
@@ -51,29 +48,25 @@ namespace AutoRest.Terraform
 
         public override async Task Generate(CodeModel codeModel)
         {
-            await base.Generate(codeModel).ConfigureAwait(false);
-            var generators = CreateGenerators();
-            generators.ForEach(gen => gen.Generate((CodeModelTf)codeModel));
-            var templateGroups = generators.ToLookup(gen => gen.FileName, gen => gen.CreateTempalte());
-            foreach (var templateGroup in templateGroups)
-            {
-                var content = await ConcatTemplatesAsync(templateGroup).ConfigureAwait(false);
-                await Write(content, $"{templateGroup.Key}{ImplementationFileExtension}").ConfigureAwait(false);
-            }
-        }
+            var model = (CodeModelTf)codeModel;
+            await base.Generate(model).ConfigureAwait(false);
 
-        private static async Task<string> ConcatTemplatesAsync(IEnumerable<ITemplate> templates)
-        {
-            const int AverageTemplateSize = 4096;
-            using (var writer = new StringWriter(new StringBuilder(AverageTemplateSize)))
+            var descriptors = CreateGeneratorDescriptors();
+            descriptors.ForEach(desc => desc.Generator.Preprocess(model));
+
+            var files = from desc in descriptors
+                        group desc by desc.TargetFile into fg
+                        select new
+                        {
+                            FileName = fg.Key,
+                            Contents = from d in fg
+                                       orderby d.PositionInFile
+                                       select d.Generator.CreateTemplate().ToString()
+                        };
+
+            foreach (var file in files)
             {
-                foreach (var template in templates)
-                {
-                    template.Settings = Singleton<SettingsTf>.Instance.StandardSettings;
-                    template.TextWriter = writer;
-                    await template.ExecuteAsync().ConfigureAwait(false);
-                }
-                return writer.GetStringBuilder().ToString();
+                await Write(string.Concat(file.Contents), file.FileName).ConfigureAwait(false);
             }
         }
     }

@@ -1,39 +1,9 @@
 @using AutoRest.Core
 @using AutoRest.Terraform
-@using System.Linq
-@inherits Template<CreateGenerator>
+@inherits TfProviderTemplateBase<CreateGenerator>
 
 func @(Model.FunctionName)(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).@Model.GoSDKClientName
 	ctx := meta.(*ArmClient).StopContext
-
-	name := d.Get("@Model.ResourceNameParameter").(string)
-	resGroup := d.Get("@Model.ResourceGroupNameParameter").(string)
-@foreach (var parameter in Model.RegularParameters)
-{
-	@:@parameter.Name := @(Model.ExpandGenerator.GetExpandFunctionName(parameter.Type))(d.Get("@parameter.Name").([]interface{}))
-}
-
-	future, err := client.Create(ctx, resGroup, name, @string.Join(", ", Model.RegularParameters.Select(p => $"*{p.Name}")))
-	if err != nil {
-		return fmt.Errorf("Error Creating/Updating @Model.ResourceName %q (Resource Group %q): %+v", name, resGroup, err)
-	}
-
-	err = future.WaitForCompletion(ctx, client.Client)
-	if err != nil {
-		return fmt.Errorf("Error Creating/Updating @Model.ResourceName %q (Resource Group %q): %+v", name, resGroup, err)
-	}
-
-	read, err := client.Get(ctx, resGroup, name)
-	if err != nil {
-		return fmt.Errorf("Error Retrieving @Model.ResourceName %q (Resource Group %q): %+v", name, resGroup, err)
-	}
-	if read.ID == nil {
-		return fmt.Errorf("Cannot read @Model.ResourceName %q (resource group %q) ID", name, resGroup)
-	}
-
-	d.SetId(*read.ID)
-
-	return @(Model.ReadFunctionName)(d, meta)
 }
 @EmptyLine

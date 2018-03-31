@@ -8,10 +8,7 @@ using static AutoRest.Core.Utilities.DependencyInjection;
 namespace AutoRest.Terraform
 {
     public class SchemaGenerator
-        : ResourceGeneratorBase
+        : TfGeneratorBase<SchemaTemplate, SchemaGenerator>
     {
-        public SchemaGenerator() => Singleton<SchemaGenerator>.Instance = this;
-
-        public override ITemplate CreateTempalte() => new SchemaTemplate { Model = CodeModel.RootField };
     }
 }

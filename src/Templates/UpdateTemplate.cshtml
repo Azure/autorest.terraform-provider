@@ -1,34 +1,9 @@
 ﻿@using AutoRest.Core
 @using AutoRest.Terraform
-@inherits Template<UpdateGenerator>
+@inherits TfProviderTemplateBase<UpdateGenerator>
 
 func @(Model.FunctionName)(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).@Model.GoSDKClientName
 	ctx := meta.(*ArmClient).StopContext
-
-	name := d.Get("@Model.ResourceNameParameter").(string)
-	resGroup := d.Get("@Model.ResourceGroupNameParameter").(string)
-	tags := d.Get("tags").(map[string]interface{})
-
-	parameter := hdinsight.ClusterPatchParameters {
-		Tags: expandTags(tags),
-	}
-
-	_, err := client.Update(ctx, resGroup, name, parameters)
-	if err != nil {
-		return err
-	}
-
-	read, err := client.Get(ctx, resGroup, name)
-	if err != nil {
-		return fmt.Errorf("Error Retrieving @Model.ResourceName %q (Resource Group %q): %+v", name, resGroup, err)
-	}
-	if read.ID == nil {
-		return fmt.Errorf("Cannot read @Model.ResourceName %q (resource group %q) ID", name, resGroup)
-	}
-
-	d.SetId(*read.ID)
-
-	return @(Model.ReadFunctionName)(d, meta)
 }
 @EmptyLine

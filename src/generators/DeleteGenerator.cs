@@ -4,11 +4,8 @@ using AutoRest.Terraform.Templates;
 namespace AutoRest.Terraform
 {
     public class DeleteGenerator
-        : ResourceGeneratorBase
+        : TfGeneratorBase<DeleteTemplate, DeleteGenerator>
     {
-        public override ITemplate CreateTempalte() => new DeleteTemplate { Model = this };
-
         public string FunctionName => CodeNamer.GetResourceDeleteMethodName(ResourceName);
-        public string AzureResourceIdPath => CodeNamer.GetAzureGoSDKIdPathName(CodeModel.DeleteMethod.MethodGroup.Name);
     }
 }

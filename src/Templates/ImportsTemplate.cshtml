@@ -1,13 +1,11 @@
 @using AutoRest.Core
 @using AutoRest.Core.Utilities
 @using AutoRest.Terraform
-@inherits Template<ImportsGenerator>
+@inherits TfProviderTemplateBase<ImportsGenerator>
 
 package @Model.PackageName
 
-/*
-@Model.Header
-*/
+@Header(string.Empty)
 
 import (
 )

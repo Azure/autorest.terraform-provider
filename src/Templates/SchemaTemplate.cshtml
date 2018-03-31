@@ -1,31 +1,6 @@
-@using AutoRest.Terraform
+﻿@using AutoRest.Terraform
 @using AutoRest.Terraform.Templates
 @using System.Diagnostics
-@inherits TfProviderTemplateBase<TfProviderField>
+@inherits TfProviderTemplateBase<SchemaGenerator>
 
-@{
-    Debug.Assert(Model.GoType.Terminal == GoSDKTerminalTypes.Complex);
-}
-
-@{
-
-@:@(Indentation)Schema: map[string]*schema.Schema {
-
-    Indentation.Indent();
-    foreach (var subField in Model.SubFields)
-    {
-
-@:@(Indentation)Name: @subField.Name
-
-        if (subField.GoType.Terminal == GoSDKTerminalTypes.Complex)
-        {
-
-@:@Include(new SchemaTemplate { Indentation = Indentation }, subField)
-
-        }
-    }
-    Indentation.Outdent();
-
-@:@(Indentation)}
-
-}
+Generate Schema Here.

@@ -1,6 +1,7 @@
 using AutoRest.Core;
 using System;
 using System.Linq;
+using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
@@ -24,5 +25,20 @@ namespace AutoRest.Terraform
             : base() => Indentation = new TemplateIndentation();
 
         protected new TemplateIndentation Indentation { get; set; }
+
+        private protected V OtherModel<V>()
+            where V : ITfProviderGenerator
+            => Singleton<V>.Instance;
+
+        protected string Include<TTemplate, TModel>(TModel model, bool inheritIndentation = true)
+            where TTemplate : TfProviderTemplateBase<TModel>, new()
+        {
+            var template = new TTemplate();
+            if (inheritIndentation)
+            {
+                template.Indentation = Indentation;
+            }
+            return Include(template, model);
+        }
     }
 }
