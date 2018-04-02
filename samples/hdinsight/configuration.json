@@ -11,7 +11,7 @@
     "create": [{
         "method": "HDInsightManagementClient/Clusters/Create",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Etag"],
             "flatten": [{
                 "source": "{:**:}",
                 "target": "/",
@@ -33,7 +33,7 @@
     "update": [{
         "method": "HDInsightManagementClient/Clusters/Update",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Etag"],
             "flatten": [{
                 "source": "{:**:}",
                 "target": "/",

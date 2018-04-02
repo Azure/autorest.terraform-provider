@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using AutoRest.Core.Model;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using static AutoRest.Core.Utilities.DependencyInjection;
@@ -23,10 +24,13 @@ namespace AutoRest.Terraform
             Parent = parent;
         }
 
+        public IVariable OriginalVariable { get; set; }
+
         public string Name { get; set; }
         public string PropertyPath => Parent == null ? string.Empty : JoinPathStrings(Parent.PropertyPath, Name);
         public GoSDKTypeChain GoType { get; private set; }
         public IEnumerable<TfProviderField> SubFields => subFields;
+        public bool IsRequired => OriginalVariable?.IsRequired ?? SubFields.Any(sf => sf.IsRequired);
 
         public void EnsureType(GoSDKTypeChain type)
         {

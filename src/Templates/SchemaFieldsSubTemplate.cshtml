@@ -1,7 +1,38 @@
 @using AutoRest.Terraform
 @using AutoRest.Terraform.Templates
 @using System.Diagnostics
+@using System.Linq
 @inherits TfProviderTemplateBase<TfProviderField>
+@functions {
+    private string GetNonTerminalSchemaType(GoSDKNonTerminalTypes nonTermType)
+    {
+        switch (nonTermType)
+        {
+            case GoSDKNonTerminalTypes.Array:
+                return "TypeList";
+            case GoSDKNonTerminalTypes.StringMap:
+                return "TypeMap";
+        }
+        Debug.Fail("Unexpected code flow");
+        return null;
+    }
+
+    private string GetBasicTerminalSchemaType(GoSDKTerminalTypes termType)
+    {
+        switch (termType)
+        {
+            case GoSDKTerminalTypes.Boolean:
+                return "TypeBool";
+            case GoSDKTerminalTypes.Int32:
+                return "TypeInt";
+            case GoSDKTerminalTypes.Enum:
+            case GoSDKTerminalTypes.String:
+                return "TypeString";
+        }
+        Debug.Fail("Unexpected code flow");
+        return null;
+    }
+}
 @(Indentation)Schema: map[string]*schema.Schema {
 @{
     Debug.Assert(Model.GoType.Terminal == GoSDKTerminalTypes.Complex);
@@ -9,14 +40,62 @@
     foreach (var subField in Model.SubFields)
     {
 
-@:@(Indentation)Name: @subField.Name
+@:@(Indentation)"@subField.Name": {
 
-        if (subField.GoType.Terminal == GoSDKTerminalTypes.Complex)
+        Indentation.Indent();
+@:@(Indentation)@(subField.IsRequired ? "Required" : "Optional"): true,
+        Indentation.Outdent();
+
+        var goType = subField.GoType;
+        var nestedTypesCount = 0;
+        foreach (var nonTermType in goType.Chain.SkipLast(1))
         {
+            Indentation.Indent();
+            nestedTypesCount++;
 
-@:@(Include<SchemaFieldsSubTemplate, TfProviderField>(subField))
-
+@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).@GetNonTerminalSchemaType(nonTermType),
+@:@(Indentation)Elem: &@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
         }
+
+        if (goType.Chain.Count > 0)
+        {
+            Indentation.Indent();
+            nestedTypesCount++;
+
+@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).@GetNonTerminalSchemaType(goType.Chain.Last()),
+@:@(Indentation)Elem: &@(OtherModel<ImportsGenerator>().Reference("schema")).@(goType.Terminal == GoSDKTerminalTypes.Complex ? "Resource" : "Schema") {
+        }
+
+        if (nestedTypesCount == 0 && goType.Terminal == GoSDKTerminalTypes.Complex)
+        {
+            Indentation.Indent();
+            nestedTypesCount++;
+
+@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).TypeList,
+@:@(Indentation)MaxItems: 1,
+@:@(Indentation)Elem: &@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+        }
+
+        Indentation.Indent();
+        if (goType.Terminal != GoSDKTerminalTypes.Complex)
+        {
+@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).@(GetBasicTerminalSchemaType(goType.Terminal)),
+        }
+        else
+        {
+@:@(Include<SchemaFieldsSubTemplate, TfProviderField>(subField))
+        }
+        Indentation.Outdent();
+
+
+        while (--nestedTypesCount >= 0)
+        {
+@:@(Indentation)},
+            Indentation.Outdent();
+        }
+
+@:@(Indentation)},
+
     }
     Indentation.Outdent();
 }

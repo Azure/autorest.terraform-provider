@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using AutoRest.Core.Model;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace AutoRest.Terraform
 {
     public class GoSDKTypedData
     {
-        public GoSDKTypedData(GoSDKInvocation invocation, string path, GoSDKTypeChain type)
+        public GoSDKTypedData(GoSDKInvocation invocation, string path, GoSDKTypeChain type, IVariable variable = null)
         {
             Debug.Assert(invocation != null);
             Debug.Assert(!string.IsNullOrEmpty(path) && type != null);
@@ -13,7 +14,10 @@ namespace AutoRest.Terraform
             PropertyPath = path;
             Name = path.ExtractLastPath();
             GoType = type;
+            OriginalVariable = variable;
         }
+
+        public IVariable OriginalVariable { get; }
 
         public string Name { get; }
         public string PropertyPath { get; }

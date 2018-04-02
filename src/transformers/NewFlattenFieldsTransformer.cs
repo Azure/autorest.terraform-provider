@@ -37,17 +37,18 @@ namespace AutoRest.Terraform
         {
             foreach (var node in parent)
             {
-                var matched = (from r in FlattenRules
-                               where r.Pattern.IsMatch(node.PropertyPath)
-                               orderby r.Priority descending
-                               select (r.Priority, r.Target)).FirstOrDefault();
-                var target = matched.Target ?? model.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
+                var (Priority, Target) = (from r in FlattenRules
+                                          where r.Pattern.IsMatch(node.PropertyPath)
+                                          orderby r.Priority descending
+                                          select (r.Priority, r.Target)).FirstOrDefault();
+                var target = Target ?? model.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
                 var field = target.LocateOrAdd(node.Name);
                 field.EnsureType(node.GoType);
+                field.OriginalVariable = node.OriginalVariable;
                 node.UpdateBackingField(field, isInResponse);
                 if (node.GoType.Chain.Any() && node.GoType.Terminal == GoSDKTerminalTypes.Complex)
                 {
-                    FlattenRules.Add((matched.Priority + 1, node.PropertyPath.AppendAnyChildrenPath().ToPropertyPathRegex(), field));
+                    FlattenRules.Add((Priority + 1, node.PropertyPath.AppendAnyChildrenPath().ToPropertyPathRegex(), field));
                 }
                 Walk(node.Properties, model, isInResponse);
             }

@@ -49,7 +49,7 @@ namespace AutoRest.Terraform
             { (AnyPathExtName, 0), $@".*" },
             { (ParameterExtName, 0), $@"{Regex.Escape(ParameterRootPath)}{AnyParamAttributePattern}" },
             { (ParameterExtName, 1), $@"{Regex.Escape(ParameterRootPath)}{Regex.Escape(AttributeStart)}{WrapByFormatBraces(0)}{Regex.Escape(AttributeEnd)}" },
-            { (ResponseExtName, 0), $@"{Regex.Escape(ResponseRootPath)}{AnyParamAttributePattern}{WrapByEscapedBraces(2)}" }
+            { (ResponseExtName, 0), $@"{Regex.Escape(ResponseRootPath)}({AnyParamAttributePattern}){WrapByEscapedBraces(2)}" }
         };
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace AutoRest.Terraform
                 var replacement = Replacements[(name, param.Count)];
                 return string.Format(CultureInfo.InvariantCulture, replacement, param);
             });
-            return new Regex($"^{pattern}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+            return new Regex($"^{pattern}$", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.Compiled);
         }
     }
 }
