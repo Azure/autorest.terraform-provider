@@ -33,8 +33,11 @@
         return null;
     }
 }
-@(Indentation)Schema: map[string]*schema.Schema {
 @{
+    var schemaPkg = OtherModel<ImportsGenerator>().Reference("schema");
+
+@:@(Indentation)Schema: map[string]*@(schemaPkg).Schema {
+
     Debug.Assert(Model.GoType.Terminal == GoSDKTerminalTypes.Complex);
     Indentation.Indent();
     foreach (var subField in Model.SubFields)
@@ -53,8 +56,8 @@
             Indentation.Indent();
             nestedTypesCount++;
 
-@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).@GetNonTerminalSchemaType(nonTermType),
-@:@(Indentation)Elem: &@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+@:@(Indentation)Type: @(schemaPkg).@GetNonTerminalSchemaType(nonTermType),
+@:@(Indentation)Elem: &@(schemaPkg).Resource {
         }
 
         if (goType.Chain.Count > 0)
@@ -62,8 +65,8 @@
             Indentation.Indent();
             nestedTypesCount++;
 
-@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).@GetNonTerminalSchemaType(goType.Chain.Last()),
-@:@(Indentation)Elem: &@(OtherModel<ImportsGenerator>().Reference("schema")).@(goType.Terminal == GoSDKTerminalTypes.Complex ? "Resource" : "Schema") {
+@:@(Indentation)Type: @(schemaPkg).@GetNonTerminalSchemaType(goType.Chain.Last()),
+@:@(Indentation)Elem: &@(schemaPkg).@(goType.Terminal == GoSDKTerminalTypes.Complex ? "Resource" : "Schema") {
         }
 
         if (nestedTypesCount == 0 && goType.Terminal == GoSDKTerminalTypes.Complex)
@@ -71,15 +74,15 @@
             Indentation.Indent();
             nestedTypesCount++;
 
-@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).TypeList,
+@:@(Indentation)Type: @(schemaPkg).TypeList,
 @:@(Indentation)MaxItems: 1,
-@:@(Indentation)Elem: &@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+@:@(Indentation)Elem: &@(schemaPkg).Resource {
         }
 
         Indentation.Indent();
         if (goType.Terminal != GoSDKTerminalTypes.Complex)
         {
-@:@(Indentation)Type: @(OtherModel<ImportsGenerator>().Reference("schema")).@(GetBasicTerminalSchemaType(goType.Terminal)),
+@:@(Indentation)Type: @(schemaPkg).@(GetBasicTerminalSchemaType(goType.Terminal)),
         }
         else
         {
@@ -98,5 +101,6 @@
 
     }
     Indentation.Outdent();
+
+@:@(Indentation)},
 }
-@(Indentation)},

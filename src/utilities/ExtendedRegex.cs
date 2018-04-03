@@ -12,7 +12,7 @@ namespace AutoRest.Terraform
 {
     internal static partial class Utilities
     {
-        private const string ModelPathSeparator = "/";
+        public const string ModelPathSeparator = "/";
         private const string AttributeStart = "[", AttributeEnd = "]", ExtensionStart = "{:", ExtensionEnd = ":}";
         private const string ParameterRootPath = "parameter", ResponseRootPath = "response";
         private static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();

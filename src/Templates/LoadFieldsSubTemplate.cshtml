@@ -1,0 +1,59 @@
+@using AutoRest.Core
+@using AutoRest.Terraform
+@using System.Diagnostics
+@using System.Linq
+@inherits TfProviderTemplateBase<(TfProviderField Field, GoSDKInvocation Invocation)>
+@functions {
+}
+@{
+    Debug.Assert(Model.Field.GoType.Terminal == GoSDKTerminalTypes.Complex);
+    foreach (var subField in Model.Field.SubFields)
+    {
+        foreach (var nonTermType in subField.GoType.Chain)
+        {
+            // name := d.Get("name").(string)
+
+            // parameters := Parameters{}
+            // __parameters := (d.Get("parameters").([]interface{}))[0].(map[string]interface{})
+            // parameters.Location := __parameters["location"].(string)
+
+            // v0 := []string{}
+            // for _, t1 := range d.Get("name").([]interface{})
+            //   v1 := t1.(string)
+            //   v0 = append(v0, v1)
+            // parameters.GroupDNS := &v0
+
+            // v0 := [][]string{}
+            // for _, t1 := range d.Get("t").([]interface{})
+            //   v1 := []string{}
+            //   for _, t2 := range t1.([]interface{})
+            //     v2 := t2.(string)
+            //     v1 = append(v1, v2)
+            //   v0 = append(v0, v1)
+            // parameters.T = &v0
+
+            // v0 := []Role{}
+            // for _, t1 := range d.Get("roles").([]interface{})
+            //   v1 := Role{}
+            //   v1.??? = ???
+            //   v0 = append(v0, v1)
+            // parameters.Roles = &v0
+
+            // range v.(map[string]interface{})
+        }
+
+        var varName = CodeNamer.GetAzureRmFieldLocalVarName(subField.PropertyPath);
+
+@:@(Indentation)@(varName) := d.Get(??) // parent[??]
+    }
+
+
+
+    if (goType.Terminal != GoSDKTerminalTypes.Complex)
+    {
+@:@(Indentation)
+    }
+    else
+    {
+    }
+}

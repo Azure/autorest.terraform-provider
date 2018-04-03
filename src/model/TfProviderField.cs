@@ -27,9 +27,11 @@ namespace AutoRest.Terraform
         public IVariable OriginalVariable { get; set; }
 
         public string Name { get; set; }
-        public string PropertyPath => Parent == null ? string.Empty : JoinPathStrings(Parent.PropertyPath, Name);
+        public TfProviderField Parent { get; }
+        public string PropertyPath => IsRoot ? string.Empty : JoinPathStrings(Parent.PropertyPath, Name);
         public GoSDKTypeChain GoType { get; private set; }
         public IEnumerable<TfProviderField> SubFields => subFields;
+        public bool IsRoot => Parent == null;
         public bool IsRequired => OriginalVariable?.IsRequired ?? SubFields.Any(sf => sf.IsRequired);
 
         public void EnsureType(GoSDKTypeChain type)
@@ -68,9 +70,8 @@ namespace AutoRest.Terraform
 
 
         public override string ToString() => $"{Name}: [{GoType}]";
+        
 
-
-        private TfProviderField Parent { get; }
         private CodeNamerTf CodeNamer => Singleton<CodeNamerTf>.Instance;
 
         private int AddField(TfProviderField field)
