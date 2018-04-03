@@ -1,9 +1,23 @@
 @using AutoRest.Core
 @using AutoRest.Terraform
+@using System.Collections.Generic
+@using System.Linq
 @inherits TfProviderTemplateBase<CreateGenerator>
 
-func @(Model.FunctionName)(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ArmClient).@Model.GoSDKClientName
-	ctx := meta.(*ArmClient).StopContext
+func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema")).ResourceData, meta interface{}) error {
+@{
+    Indentation.Indent();
+
+@:@(Indentation)client := meta.(* ArmClient).@Model.GoSDKClientName
+@:@(Indentation)ctx := meta.(* ArmClient).StopContext
+@EmptyLine
+
+    foreach (var arg in Model.Invocations.First().Arguments)
+    {
+@:@(Include<LoadFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string)>((arg, arg.GoType.Chain, string.Empty)))
+    }
+
+    Indentation.Outdent();
+}
 }
 @EmptyLine

@@ -1,59 +1,63 @@
 @using AutoRest.Core
 @using AutoRest.Terraform
+@using System.Collections.Generic
 @using System.Diagnostics
 @using System.Linq
-@inherits TfProviderTemplateBase<(TfProviderField Field, GoSDKInvocation Invocation)>
+@inherits TfProviderTemplateBase<(GoSDKTypedData Data, IEnumerable<GoSDKNonTerminalTypes> NonTermTypes, string Scope)>
 @functions {
 }
 @{
-    Debug.Assert(Model.Field.GoType.Terminal == GoSDKTerminalTypes.Complex);
-    foreach (var subField in Model.Field.SubFields)
+    Debug.Assert(Model.Data != null && Model.NonTermTypes != null && Model.Scope != null);
+
+    if (!Model.NonTermTypes.Any())
     {
-        foreach (var nonTermType in subField.GoType.Chain)
+        if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
         {
-            // name := d.Get("name").(string)
 
-            // parameters := Parameters{}
-            // __parameters := (d.Get("parameters").([]interface{}))[0].(map[string]interface{})
-            // parameters.Location := __parameters["location"].(string)
+@:@(Indentation)@(string.IsNullOrEmpty(Model.Scope) ? string.Empty : Model.Scope + ".")@(Model.Data.Name) @(string.IsNullOrEmpty(Model.Scope) ? ":=" : "=") @@PARENT@@["@(Model.Data.BackingField.Name)"].(?)
 
-            // v0 := []string{}
-            // for _, t1 := range d.Get("name").([]interface{})
-            //   v1 := t1.(string)
-            //   v0 = append(v0, v1)
-            // parameters.GroupDNS := &v0
-
-            // v0 := [][]string{}
-            // for _, t1 := range d.Get("t").([]interface{})
-            //   v1 := []string{}
-            //   for _, t2 := range t1.([]interface{})
-            //     v2 := t2.(string)
-            //     v1 = append(v1, v2)
-            //   v0 = append(v0, v1)
-            // parameters.T = &v0
-
-            // v0 := []Role{}
-            // for _, t1 := range d.Get("roles").([]interface{})
-            //   v1 := Role{}
-            //   v1.??? = ???
-            //   v0 = append(v0, v1)
-            // parameters.Roles = &v0
-
-            // range v.(map[string]interface{})
         }
+        else
+        {
 
-        var varName = CodeNamer.GetAzureRmFieldLocalVarName(subField.PropertyPath);
+@:@(Indentation)@(string.IsNullOrEmpty(Model.Scope) ? string.Empty : Model.Scope + ".")@(Model.Data.Name) := &@(Model.Data.GoType.OriginalTerminalType.Name){}
 
-@:@(Indentation)@(varName) := d.Get(??) // parent[??]
-    }
+            foreach (var prop in Model.Data.Properties)
+            {
 
+@:@(Include<LoadFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string)>((prop, prop.GoType.Chain, (string.IsNullOrEmpty(Model.Scope) ? string.Empty : Model.Scope + ".") + Model.Data.Name)))
 
-
-    if (goType.Terminal != GoSDKTerminalTypes.Complex)
-    {
-@:@(Indentation)
+            }
+        }
     }
     else
     {
+        var nonTermType = Model.NonTermTypes.First();
+
+        switch (nonTermType)
+        {
+            case GoSDKNonTerminalTypes.Array:
+
+@:@(Indentation)@(string.IsNullOrEmpty(Model.Scope) ? string.Empty : Model.Scope + ".")@(Model.Data.Name) := []?
+@:@(Indentation)for _, @(Model.Data.Name)_schema_item := range @@PARENT@@["@(Model.Data.BackingField.Name)"].([]interface{}) {
+
+                Indentation.Indent();
+
+@:@(Include<LoadFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string)>((Model.Data, Model.NonTermTypes.Skip(1), string.Empty)))
+@:@(Indentation)@(Model.Scope)@(Model.Data.Name) = append(@(Model.Scope)@(Model.Data.Name), @(Model.Data.Name)_array_item)
+
+                Indentation.Outdent();
+
+@:@(Indentation)}
+
+                break;
+            case GoSDKNonTerminalTypes.StringMap:
+                Indentation.Indent();
+
+@:@(Indentation)// MAP IS NOT IMPLEMENTED YET
+
+                Indentation.Outdent();
+                break;
+        }
     }
 }

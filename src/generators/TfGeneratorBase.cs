@@ -1,4 +1,6 @@
 ﻿using AutoRest.Core;
+using System.Collections.Generic;
+using System.Linq;
 using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
@@ -37,6 +39,7 @@ namespace AutoRest.Terraform
         public string GoSDKClientName => CodeNamer.GetAzureGoSDKClientName(ResourceName);
         public string FunctionName => CodeNamer.GetGoPrivateMethodName(CodeNamer.JoinNonEmpty(AzureRmResourceName, FunctionNamePostfix));
 
+        public virtual IEnumerable<GoSDKInvocation> Invocations => Enumerable.Empty<GoSDKInvocation>();
         protected abstract string FunctionNamePostfix { get; }
     }
 }

@@ -12,5 +12,6 @@ namespace AutoRest.Terraform
         : TfFunctionGeneratorBase<ReadTemplate, ReadGenerator>
     {
         protected override string FunctionNamePostfix => "Read";
+        public override IEnumerable<GoSDKInvocation> Invocations => CodeModel.ReadInvocations;
     }
 }

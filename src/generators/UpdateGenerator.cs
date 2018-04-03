@@ -12,5 +12,6 @@ namespace AutoRest.Terraform
         : TfFunctionGeneratorBase<UpdateTemplate, UpdateGenerator>
     {
         protected override string FunctionNamePostfix => "Update";
+        public override IEnumerable<GoSDKInvocation> Invocations => CodeModel.UpdateInvocations;
     }
 }

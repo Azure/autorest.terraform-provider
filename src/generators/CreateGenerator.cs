@@ -12,5 +12,6 @@ namespace AutoRest.Terraform
         : TfFunctionGeneratorBase<CreateTemplate, CreateGenerator>
     {
         protected override string FunctionNamePostfix => "Create";
+        public override IEnumerable<GoSDKInvocation> Invocations => CodeModel.CreateInvocations;
     }
 }
