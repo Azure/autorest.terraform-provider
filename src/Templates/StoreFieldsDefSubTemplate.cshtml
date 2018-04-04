@@ -1,0 +1,36 @@
+@using AutoRest.Core
+@using AutoRest.Terraform
+@using AutoRest.Terraform.Templates
+@using System.Collections.Generic
+@using System.Diagnostics
+@using System.Linq
+@inherits TfProviderTemplateBase<(TfProviderField Field, string Value, Stack<IDictionary<string, string>> FieldDefs)>
+@{
+    Debug.Assert(Model.Field != null && Model.FieldDefs != null && Model.FieldDefs.Count > 0);
+
+    var fieldVar = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Field);
+
+    if (Model.FieldDefs.All(def => !def.ContainsKey(Model.Field.PropertyPath)))
+    {
+        if (Model.Field.Parent.IsRoot)
+        {
+@:@(Indentation)@(fieldVar) := @(Model.Value)
+@:@(Indentation)d.Set("@(Model.Field.Name)", @(fieldVar))
+        }
+        else
+        {
+
+@:@(Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((Model.Field.Parent, null, Model.FieldDefs)))
+
+            var parentFieldVar = Model.FieldDefs.First(def => def.ContainsKey(Model.Field.Parent.PropertyPath))[Model.Field.Parent.PropertyPath];
+
+            if (!string.IsNullOrEmpty(Model.Value))
+            {
+@:@(Indentation)@(fieldVar) := @(Model.Value)
+@:@(Indentation)@(parentFieldVar)["@(Model.Field.Name)"] = @(fieldVar)
+            }
+
+        }
+        Model.FieldDefs.Peek().Add(Model.Field.PropertyPath, fieldVar);
+    }
+}
