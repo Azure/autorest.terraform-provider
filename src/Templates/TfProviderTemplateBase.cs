@@ -39,7 +39,7 @@ namespace AutoRest.Terraform
             {
                 template.Indentation = Indentation;
             }
-            return Include(template, model);
+            return Include(template, model).TrimEnd().TrimStart('\r', '\n');
         }
     }
 }

@@ -20,7 +20,8 @@ namespace AutoRest.Terraform
 
         public virtual string GetAzureRmResourceName(string name) => JoinNonEmpty("Resource Arm", name);
         public virtual string GetAzureRmSchemaName(string name) => name.Underscore();
-        public virtual string GetAzureRmFieldLocalVarName(string path) => GetGoLocalVariableName(path).Replace(ModelPathSeparator, "__");
+        public virtual string GetAzureRmPropPathLocalVarName(IEnumerable<string> paths) => GetGoLocalVariableName(string.Join(' ', paths));
+        public virtual string GetAzureRmFieldLocalVarName(TfProviderField field) => field.PropertyPath.Replace("/", "__");
 
         public virtual string GetResourceFileName(string name) => TitleUnderscoreCase(GetAzureRmResourceName(name));
 

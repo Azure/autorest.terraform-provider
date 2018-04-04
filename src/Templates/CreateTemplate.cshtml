@@ -1,5 +1,6 @@
 @using AutoRest.Core
 @using AutoRest.Terraform
+@using AutoRest.Terraform.Templates
 @using System.Collections.Generic
 @using System.Linq
 @inherits TfProviderTemplateBase<CreateGenerator>
@@ -12,9 +13,20 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
 @:@(Indentation)ctx := meta.(* ArmClient).StopContext
 @EmptyLine
 
-    foreach (var arg in Model.Invocations.First().Arguments)
+    var fieldDefs = new Stack<IDictionary<string, string>>();
+    fieldDefs.Push(new Dictionary<string, string>());
+    foreach (var invocation in Model.Invocations)
     {
-@:@(Include<LoadFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string)>((arg, arg.GoType.Chain, string.Empty)))
+        foreach (var arg in invocation.Arguments)
+        {
+@:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType.Chain, string.Empty, fieldDefs)))
+        }
+
+        // Call the function
+
+        foreach (var resp in invocation.Responses)
+        {
+        }
     }
 
     Indentation.Outdent();
