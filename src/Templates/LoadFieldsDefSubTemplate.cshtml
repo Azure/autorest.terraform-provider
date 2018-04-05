@@ -1,31 +1,39 @@
-@using AutoRest.Core
 @using AutoRest.Terraform
 @using AutoRest.Terraform.Templates
 @using System.Collections.Generic
 @using System.Diagnostics
 @using System.Linq
-@inherits TfProviderTemplateBase<(TfProviderField Field, Stack<IDictionary<string, string>> FieldDefs)>
+@inherits TfProviderTemplateBase<(TfProviderField Field, string TargetFormat, Stack<IDictionary<string, string>> FieldDefs)>
+@functions{
+    private string GetFieldVariableName(TfProviderField field) => "p" + CodeNamer.GetAzureRmFieldLocalVarName(field);
+    private string IncludeSelf(TfProviderField field)
+        => Include<LoadFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>(
+            (field, null, Model.FieldDefs));
+}
 @{
     Debug.Assert(Model.Field != null && Model.FieldDefs != null && Model.FieldDefs.Count > 0);
 
-    var fieldVar = "p" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Field);
-
-    if (Model.FieldDefs.All(def => !def.ContainsKey(Model.Field.PropertyPath)))
+    var definition = Model.FieldDefs.FirstOrDefault(def => def.ContainsKey(Model.Field.Parent.PropertyPath));
+    if (!Model.Field.Parent.IsRoot && definition == null)
     {
-        if (Model.Field.Parent.IsRoot)
-        {
-@:@(Indentation)@(fieldVar) := d.Get("@(Model.Field.Name)").(?)
-        }
-        else
-        {
+@:@(IncludeSelf(Model.Field.Parent))
+        definition = Model.FieldDefs.First(def => def.ContainsKey(Model.Field.Parent.PropertyPath));
+    }
 
-@:@(Include<LoadFieldsDefSubTemplate, (TfProviderField, Stack<IDictionary<string, string>>)>((Model.Field.Parent, Model.FieldDefs)))
+    var actualTargetFormat = Model.TargetFormat;
+    if (string.IsNullOrEmpty(actualTargetFormat))
+    {
+        var fieldVarName = GetFieldVariableName(Model.Field);
+        Model.FieldDefs.Peek().Add(Model.Field.PropertyPath, fieldVarName);
+        actualTargetFormat = fieldVarName + " := {0}";
+    }
 
-            var parentFieldVar = Model.FieldDefs.First(def => def.ContainsKey(Model.Field.Parent.PropertyPath))[Model.Field.Parent.PropertyPath];
-
-@:@(Indentation)@(fieldVar) := @(parentFieldVar)["@(Model.Field.Name)"].(?)
-
-        }
-        Model.FieldDefs.Peek().Add(Model.Field.PropertyPath, fieldVar);
+    if (Model.Field.Parent.IsRoot)
+    {
+@:@(Indentation)@(string.Format(actualTargetFormat, $"d.Get(\"{Model.Field.Name}\")"))
+    }
+    else
+    {
+@:@(Indentation)@(string.Format(actualTargetFormat, $"{definition[Model.Field.Parent.PropertyPath]}[\"{Model.Field.Name}\"]"))
     }
 }

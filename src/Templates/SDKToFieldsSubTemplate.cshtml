@@ -6,16 +6,20 @@
 @inherits TfProviderTemplateBase<(GoSDKTypedData Data, IEnumerable<GoSDKNonTerminalTypes> NonTermTypes, string Scope, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
     private string GetNewScope(string scope) => (scope + (Model.Data.GoType.Chain.Count == 0 ? Model.Data.Name : string.Empty)).TrimEnd('.') + ".";
-    private (string FieldVarName, string IteratorVarName, string ItemValueVarName) GetNonTerminalVariableNames(int ntCount)
+    private (string FieldVarName, string IteratorKeyVarName, string IteratorVarName, string ItemValueVarName) GetNonTerminalVariableNames()
     {
-        var field = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Data.BackingField) + (ntCount > 0 ? ntCount.ToString() : string.Empty);
-        var iterator = CodeNamer.GetAzureRmPropPathLocalVarName(Model.Data.PropertyPath.SplitPathStrings().Skip(1)) + (ntCount > 0 ? ntCount.ToString() : string.Empty);
-        return (field, iterator, field + "___value");
+        var ntCount = Model.NonTermTypes.Count() - 1;
+        var postFix = (ntCount > 0 ? ntCount.ToString() : string.Empty);
+        var field = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Data.BackingField) + postFix;
+        var iterator = CodeNamer.GetAzureRmPropPathLocalVarName(Model.Data.PropertyPath.SplitPathStrings().Skip(1)) + postFix;
+        var iteratorKey = (Model.NonTermTypes.First() == GoSDKNonTerminalTypes.StringMap ? field + "___key" : "_");
+        return (field, iteratorKey, iterator, field + "___value");
     }
     private string IncludeStoreFields(TfProviderField field, string value)
         => Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((field, value, Model.FieldDefs));
-    private string IncludeSelf(GoSDKTypedData d, IEnumerable<GoSDKNonTerminalTypes> nt, string s)
-        => Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((d, nt, s, Model.FieldDefs));
+    private string IncludeSelf(GoSDKTypedData data, IEnumerable<GoSDKNonTerminalTypes> nonTerms, string scope)
+        => Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>(
+            (data, nonTerms, scope, Model.FieldDefs));
 }
 @{
     Debug.Assert(Model.Data != null && Model.NonTermTypes != null && Model.Scope != null);
@@ -38,8 +42,7 @@
     else
     {
         var nonTermsLeft = Model.NonTermTypes.Skip(1);
-        var (fieldVarName, iteratorVarName, valueVarName) = GetNonTerminalVariableNames(nonTermsLeft.Count());
-        var keyVarName = Model.NonTermTypes.First() == GoSDKNonTerminalTypes.StringMap ? fieldVarName + "___key" : "_";
+        var (fieldVarName, keyVarName, iteratorVarName, valueVarName) = GetNonTerminalVariableNames();
 
 @:@(Indentation)@(fieldVarName) := make([]interface{} / map[string]string?)
 @:@(Indentation)for @(keyVarName), @(iteratorVarName) := range @(value) {

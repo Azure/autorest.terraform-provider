@@ -6,6 +6,9 @@
 @inherits TfProviderTemplateBase<(TfProviderField Field, string Value, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
     private string GetFieldVariableName(TfProviderField field) => "r" + CodeNamer.GetAzureRmFieldLocalVarName(field);
+    private string IncludeSelf(TfProviderField field)
+        => Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>(
+            (field, null, Model.FieldDefs));
 }
 @{
     Debug.Assert(Model.Field != null && Model.FieldDefs != null && Model.FieldDefs.Count > 0);
@@ -13,7 +16,7 @@
     var definition = Model.FieldDefs.FirstOrDefault(def => def.ContainsKey(Model.Field.Parent.PropertyPath));
     if (!Model.Field.Parent.IsRoot && definition == null)
     {
-@:@(Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((Model.Field.Parent, null, Model.FieldDefs)))
+@:@(IncludeSelf(Model.Field.Parent))
         definition = Model.FieldDefs.First(def => def.ContainsKey(Model.Field.Parent.PropertyPath));
     }
 
