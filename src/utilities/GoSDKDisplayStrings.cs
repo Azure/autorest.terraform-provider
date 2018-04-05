@@ -36,12 +36,8 @@ namespace AutoRest.Terraform
         private static void AppendDisplayString(this GoSDKInvocation invocation, IndentedStringBuilder builder)
         {
             builder.AppendLine("{0} invocation \"{1}\"", invocation.Category, invocation.MethodName);
-            builder.Indent();
-            invocation.Arguments.ForEach(arg => arg.AppendDisplayString(builder, false));
-            builder.Outdent();
-            builder.Indent();
-            invocation.Responses.ForEach(arg => arg.AppendDisplayString(builder, true));
-            builder.Outdent();
+            invocation.ArgumentsRoot.AppendDisplayString(builder, false);
+            invocation.ResponsesRoot.AppendDisplayString(builder, true);
         }
 
         private static void AppendDisplayString(this GoSDKTypedData argument, IndentedStringBuilder builder, bool isResponse)

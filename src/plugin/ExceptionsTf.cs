@@ -19,4 +19,13 @@ namespace AutoRest.Terraform
         {
         }
     }
+
+    internal class SchemaFieldOutOfScopeException
+        : ApplicationException
+    {
+        public SchemaFieldOutOfScopeException(string message)
+            : base(message)
+        {
+        }
+    }
 }

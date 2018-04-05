@@ -18,7 +18,7 @@ namespace AutoRest.Terraform
         private static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();
 
         private const string AnyPathExtName = "**", AnySinglePathExtName = "*", ParameterExtName = "p", ResponseExtName = "r";
-        private static readonly string AnyPathExtension = AnyPathExtName.ToExtensionString();
+        public static readonly string AnyPathExtension = AnyPathExtName.ToExtensionString();
 
 
         private static string ToAttributeString(this object obj) => AttributeStart + obj + AttributeEnd;

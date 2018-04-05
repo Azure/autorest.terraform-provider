@@ -1,11 +1,21 @@
 ﻿using AutoRest.Core.Model;
+using AutoRest.Core.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace AutoRest.Terraform
 {
     public class GoSDKTypedData
+        : ITreeNode<GoSDKTypedData>
     {
+        private const string RootFieldName = "_ROOT_";
+
+        public GoSDKTypedData()
+        {
+            Name = RootFieldName;
+            PropertyPath = string.Empty;
+        }
+
         public GoSDKTypedData(GoSDKInvocation invocation, string path, GoSDKTypeChain type, IVariable variable = null)
         {
             Debug.Assert(invocation != null);
@@ -23,21 +33,41 @@ namespace AutoRest.Terraform
         public string PropertyPath { get; }
         public TfProviderField BackingField { get; private set; }
         public GoSDKTypeChain GoType { get; }
-        public List<GoSDKTypedData> Properties { get; } = new List<GoSDKTypedData>();
+        public IEnumerable<GoSDKTypedData> Properties => properties;
+
+        public GoSDKTypedData Parent { get; private set; }
+        public IEnumerable<GoSDKTypedData> Children => Properties;
+
 
         private GoSDKInvocation Invocation { get; }
 
+        public void AddProperties(IEnumerable<GoSDKTypedData> props)
+        {
+            props.ForEach(p => p.Parent = this);
+            properties.AddRange(props);
+        }
+
         public void UpdateBackingField(TfProviderField field, bool isSet)
         {
-            BackingField = field;
             if (isSet)
             {
-                BackingField.AddUpdatedBy(Invocation);
+                BackingField?.RemoveUpdatedBy(this);
             }
             else
             {
-                BackingField.AddUsedBy(Invocation);
+                BackingField?.RemoveUsedBy(this);
+            }
+            BackingField = field;
+            if (isSet)
+            {
+                BackingField?.AddUpdatedBy(this);
+            }
+            else
+            {
+                BackingField?.AddUsedBy(this);
             }
         }
+
+        private readonly List<GoSDKTypedData> properties = new List<GoSDKTypedData>();
     }
 }

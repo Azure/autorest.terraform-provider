@@ -23,7 +23,7 @@ namespace AutoRest.Terraform
 
         public string MethodName => OriginalMethod.Name;
         public InvocationCategory Category { get; }
-        public List<GoSDKTypedData> Arguments { get; } = new List<GoSDKTypedData>();
-        public List<GoSDKTypedData> Responses { get; } = new List<GoSDKTypedData>();
+        public GoSDKTypedData ArgumentsRoot { get; } = new GoSDKTypedData();
+        public GoSDKTypedData ResponsesRoot { get; } = new GoSDKTypedData();
     }
 }

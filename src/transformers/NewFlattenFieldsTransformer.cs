@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using AutoRest.Core.Utilities;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static AutoRest.Terraform.Utilities;
 
 namespace AutoRest.Terraform
 {
@@ -13,44 +15,73 @@ namespace AutoRest.Terraform
     {
         public void Transform(CodeModelTf model)
         {
-            model.CreateInvocations.ForEach(invn => FlattenFields(invn, model));
-            model.ReadInvocations.ForEach(invn => FlattenFields(invn, model));
-            model.UpdateInvocations.ForEach(invn => FlattenFields(invn, model));
-            model.DeleteInvocations.ForEach(invn => FlattenFields(invn, model));
+            CodeModel = model;
+            model.CreateInvocations.ForEach(FlattenFields);
+            model.ReadInvocations.ForEach(FlattenFields);
+            model.UpdateInvocations.ForEach(FlattenFields);
+            model.DeleteInvocations.ForEach(FlattenFields);
         }
 
-        private List<(uint Priority, Regex Pattern, TfProviderField Target)> FlattenRules { get; } = new List<(uint, Regex, TfProviderField)>();
+        private CodeModelTf CodeModel { get; set; }
+        private Stack<(Regex Pattern, TfProviderField ScopedField)> ScopeRules { get; } = new Stack<(Regex, TfProviderField)>();
+        private SortedList<uint, (Regex Pattern, TfProviderField Target)> FlattenRules { get; } = new SortedList<uint, (Regex, TfProviderField)>();
 
-        private void FlattenFields(GoSDKInvocation invocation, CodeModelTf model)
+        private void FlattenFields(GoSDKInvocation invocation)
         {
+            ScopeRules.Clear();
+            ScopeRules.Push((AnyPathExtension.ToPropertyPathRegex(), CodeModel.RootField));
             FlattenRules.Clear();
-            FlattenRules.AddRange(from r in invocation.OriginalMetadata.Flattens
-                                  let p = r.SourcePath.ToPropertyPathRegex()
-                                  let path = r.TargetPath.SplitPathStrings()
-                                  let t = model.RootField.LocateOrAdd(path)
-                                  select ((uint)r.Priority, p, t));
-            Walk(invocation.Arguments, model, false);
-            Walk(invocation.Responses, model, true);
+            var rulesDefinitions = from r in invocation.OriginalMetadata.Flattens
+                                   let p = r.SourcePath.ToPropertyPathRegex()
+                                   let path = r.TargetPath.SplitPathStrings()
+                                   let f = CodeModel.RootField.LocateOrAdd(path)
+                                   select new
+                                   {
+                                       Priority = (uint)r.Priority,
+                                       Pattern = p,
+                                       RootField = f
+                                   };
+            rulesDefinitions.ForEach(rd => FlattenRules.Add(rd.Priority, (rd.Pattern, rd.RootField)));
+            FlattenTree(invocation.ArgumentsRoot, false);
+            FlattenTree(invocation.ResponsesRoot, true);
         }
 
-        private void Walk(IList<GoSDKTypedData> parent, CodeModelTf model, bool isInResponse)
+        private void FlattenTree(GoSDKTypedData root, bool isInResponse)
         {
-            foreach (var node in parent)
+            foreach (var node in root.Traverse(TraverseType.PreOrder))
             {
-                var (Priority, Target) = (from r in FlattenRules
-                                          where r.Pattern.IsMatch(node.PropertyPath)
-                                          orderby r.Priority descending
-                                          select (r.Priority, r.Target)).FirstOrDefault();
-                var target = Target ?? model.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
+                var target = (from r in FlattenRules
+                              where r.Value.Pattern.IsMatch(node.PropertyPath)
+                              select r.Value.Target).FirstOrDefault();
+                if (target == null)
+                {
+                    target = CodeModel.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
+                }
+
+                var scopedTarget = (from r in ScopeRules
+                                    where r.Pattern.IsMatch(node.PropertyPath)
+                                    select r.ScopedField).First();
+                if (!target.Traverse(TraverseType.Ancestors).Contains(scopedTarget))
+                {
+                    if (scopedTarget.Traverse(TraverseType.Ancestors).Contains(target))
+                    {
+                        target = scopedTarget;
+                    }
+                    else
+                    {
+                        throw new SchemaFieldOutOfScopeException($"{node.PropertyPath} should be scoped within {scopedTarget.PropertyPath}");
+                    }
+                }
+
                 var field = target.LocateOrAdd(node.Name);
                 field.EnsureType(node.GoType);
                 field.OriginalVariable = node.OriginalVariable;
                 node.UpdateBackingField(field, isInResponse);
+
                 if (node.GoType.Chain.Any() && node.GoType.Terminal == GoSDKTerminalTypes.Complex)
                 {
-                    FlattenRules.Add((Priority + 1, node.PropertyPath.AppendAnyChildrenPath().ToPropertyPathRegex(), field));
+                    ScopeRules.Push((node.PropertyPath.AppendAnyChildrenPath().ToPropertyPathRegex(), field));
                 }
-                Walk(node.Properties, model, isInResponse);
             }
         }
     }

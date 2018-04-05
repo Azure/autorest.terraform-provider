@@ -112,13 +112,13 @@ namespace AutoRest.Terraform
         public enum Priority
             : uint
         {
-            Lowest = 0,
-            Lower = 15,
-            Low = 30,
-            Normal = 50,
-            High = 70,
-            Higher = 85,
-            Highest = 100
+            Lowest = 6,
+            Lower = 5,
+            Low = 4,
+            Normal = 3,
+            High = 2,
+            Higher = 1,
+            Highest = 0
         }
 
         public sealed class FlattenDefinition

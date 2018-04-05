@@ -9,26 +9,26 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
 @{
     Indentation.Indent();
 
-@:@(Indentation)client := meta.(* ArmClient).@Model.GoSDKClientName
-@:@(Indentation)ctx := meta.(* ArmClient).StopContext
+@:@(Indentation)client := meta.(*ArmClient).@Model.GoSDKClientName
+@:@(Indentation)ctx := meta.(*ArmClient).StopContext
 @EmptyLine
 
     foreach (var invocation in Model.Invocations)
     {
         var fieldDefs = new Stack<IDictionary<string, string>>();
         fieldDefs.Push(new Dictionary<string, string>());
-        foreach (var arg in invocation.Arguments)
+        foreach (var arg in invocation.ArgumentsRoot.Children)
         {
 @:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType.Chain, string.Empty, fieldDefs)))
         }
 
 @EmptyLine
-@:// Call the function with parameters, and returns response
+@:@(Indentation)// Call the function with parameters, and returns response
 @EmptyLine
 
         fieldDefs.Clear();
         fieldDefs.Push(new Dictionary<string, string>());
-        foreach (var resp in invocation.Responses)
+        foreach (var resp in invocation.ResponsesRoot.Children)
         {
 @:@(Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((resp, resp.GoType.Chain, "response.", fieldDefs)))
         }

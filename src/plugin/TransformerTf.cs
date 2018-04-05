@@ -20,7 +20,8 @@ namespace AutoRest.Terraform
             {
                 new NewInvocationsTransformer(),
                 new ArgumentsFilterCloneTransformer(),
-                new NewFlattenFieldsTransformer()
+                new NewFlattenFieldsTransformer(),
+                new NormalizeTransformer()
             };
         }
 

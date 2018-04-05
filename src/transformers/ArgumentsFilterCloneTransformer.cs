@@ -37,11 +37,11 @@ namespace AutoRest.Terraform
                                         let path = rp.ToPathString(false)
                                         where rp.Value.Body != null && ex.All(x => !x.IsMatch(path))
                                         select Clone(invn, path, rp.Value.Body, ex)
-                           select (invn.Arguments, invn.Responses, ArgChildren: pdata, RespChildren: rhdata.Concat(rbdata));
-            foreach (var (Arguments, Responses, ArgChildren, RespChildren) in argsData)
+                           select (invn.ArgumentsRoot, invn.ResponsesRoot, ArgChildren: pdata, RespChildren: rhdata.Concat(rbdata));
+            foreach (var (argRoot, respRoot, argChildren, respChildren) in argsData)
             {
-                Arguments.AddRange(ArgChildren);
-                Responses.AddRange(RespChildren);
+                argRoot.AddProperties(argChildren);
+                respRoot.AddProperties(respChildren);
             }
         }
 
@@ -54,7 +54,7 @@ namespace AutoRest.Terraform
                                let subpath = p.ToPathString(path)
                                where excludes.All(x => !x.IsMatch(subpath))
                                select Clone(invocation, subpath, p.ModelType, excludes, p);
-                goData.Properties.AddRange(children);
+                goData.AddProperties(children);
             }
             return goData;
         }

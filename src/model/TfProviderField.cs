@@ -1,4 +1,5 @@
 ﻿using AutoRest.Core.Model;
+using AutoRest.Core.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,6 +9,7 @@ using static AutoRest.Terraform.Utilities;
 namespace AutoRest.Terraform
 {
     public class TfProviderField
+        : ITreeNode<TfProviderField>
     {
         private const string RootFieldName = "_ROOT_";
 
@@ -27,12 +29,16 @@ namespace AutoRest.Terraform
         public IVariable OriginalVariable { get; set; }
 
         public string Name { get; set; }
-        public TfProviderField Parent { get; }
         public string PropertyPath => IsRoot ? string.Empty : JoinPathStrings(Parent.PropertyPath, Name);
         public GoSDKTypeChain GoType { get; private set; }
-        public IEnumerable<TfProviderField> SubFields => subFields;
+        public IEnumerable<TfProviderField> SubFields => from f in subFields.Values
+                                                         orderby f.Name
+                                                         select f;
         public bool IsRoot => Parent == null;
         public bool IsRequired => OriginalVariable?.IsRequired ?? SubFields.Any(sf => sf.IsRequired);
+
+        public TfProviderField Parent { get; }
+        public IEnumerable<TfProviderField> Children => SubFields;
 
         public void EnsureType(GoSDKTypeChain type)
         {
@@ -57,33 +63,47 @@ namespace AutoRest.Terraform
                 return this;
             }
             name = CodeNamer.GetAzureRmSchemaName(name);
-            if (!subFieldLookup.TryGetValue(name, out int index))
+            if (!subFields.TryGetValue(name, out var field))
             {
-                index = AddField(new TfProviderField(this, name));
+                field = AddField(name);
             }
-            return subFields[index].LocateOrAdd(paths.Skip(1));
+            return field.LocateOrAdd(paths.Skip(1));
         }
 
-        public void AddUsedBy(GoSDKInvocation invocation) => usedBy.Add(invocation);
+        public TfProviderField Remove() => Parent.RemoveField(Name);
 
-        public void AddUpdatedBy(GoSDKInvocation invocation) => updatedBy.Add(invocation);
+        public void AddUsedBy(GoSDKTypedData data) => usedBy.Add(data);
+        public void RemoveUsedBy(GoSDKTypedData data) => usedBy.Remove(data);
+        public void AddUpdatedBy(GoSDKTypedData data) => updatedBy.Add(data);
+        public void RemoveUpdatedBy(GoSDKTypedData data) => updatedBy.Remove(data);
 
 
         public override string ToString() => $"{Name}: [{GoType}]";
-        
+
 
         private CodeNamerTf CodeNamer => Singleton<CodeNamerTf>.Instance;
 
-        private int AddField(TfProviderField field)
+        private TfProviderField AddField(string name)
         {
-            var index = subFields.Count;
-            subFields.Add(field);
-            subFieldLookup.Add(field.Name, index);
-            return index;
+            Debug.Assert(!string.IsNullOrWhiteSpace(name));
+            var field = new TfProviderField(this, name);
+            subFields.Add(name, field);
+            return field;
         }
 
-        private readonly List<TfProviderField> subFields = new List<TfProviderField>();
-        private readonly Dictionary<string, int> subFieldLookup = new Dictionary<string, int>();
-        private readonly ISet<GoSDKInvocation> usedBy = new HashSet<GoSDKInvocation>(), updatedBy = new HashSet<GoSDKInvocation>();
+        private TfProviderField RemoveField(string fieldName)
+        {
+            if (subFields.TryGetValue(fieldName, out var toRemove))
+            {
+                toRemove.usedBy.ToList().ForEach(d => d.UpdateBackingField(null, false));
+                toRemove.updatedBy.ToList().ForEach(d => d.UpdateBackingField(null, true));
+                subFields.Remove(fieldName);
+                return toRemove;
+            }
+            return null;
+        }
+
+        private readonly IDictionary<string, TfProviderField> subFields = new Dictionary<string, TfProviderField>();
+        private readonly ISet<GoSDKTypedData> usedBy = new HashSet<GoSDKTypedData>(), updatedBy = new HashSet<GoSDKTypedData>();
     }
 }
