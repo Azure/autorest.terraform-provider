@@ -1,77 +1,77 @@
-@using AutoRest.Core
 @using AutoRest.Terraform
 @using AutoRest.Terraform.Templates
 @using System.Collections.Generic
 @using System.Diagnostics
 @using System.Linq
 @inherits TfProviderTemplateBase<(GoSDKTypedData Data, IEnumerable<GoSDKNonTerminalTypes> NonTermTypes, string Scope, Stack<IDictionary<string, string>> FieldDefs)>
+@functions{
+    private string GetNewScope(string scope) => (scope + (Model.Data.GoType.Chain.Count == 0 ? Model.Data.Name : string.Empty)).TrimEnd('.') + ".";
+    private (string FieldVarName, string IteratorVarName, string ItemValueVarName) GetNonTerminalVariableNames(int ntCount)
+    {
+        var field = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Data.BackingField) + (ntCount > 0 ? ntCount.ToString() : string.Empty);
+        var iterator = CodeNamer.GetAzureRmPropPathLocalVarName(Model.Data.PropertyPath.SplitPathStrings().Skip(1)) + (ntCount > 0 ? ntCount.ToString() : string.Empty);
+        return (field, iterator, field + "___value");
+    }
+    private string IncludeStoreFields(TfProviderField field, string value)
+        => Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((field, value, Model.FieldDefs));
+    private string IncludeSelf(GoSDKTypedData d, IEnumerable<GoSDKNonTerminalTypes> nt, string s)
+        => Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((d, nt, s, Model.FieldDefs));
+}
 @{
     Debug.Assert(Model.Data != null && Model.NonTermTypes != null && Model.Scope != null);
 
-    var nestedCount = Model.NonTermTypes.Count();
-    var assigner = Model.Scope + Model.Data.Name;
-    if (string.IsNullOrEmpty(Model.Scope) && nestedCount > 0)
-    {
-        assigner += nestedCount;
-    }
-
+    var value = "*" + Model.Scope + Model.Data.Name;
     if (!Model.NonTermTypes.Any())
     {
         if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
         {
-@:@(Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((Model.Data.BackingField, assigner, Model.FieldDefs)))
+@:@(IncludeStoreFields(Model.Data.BackingField, value))
         }
         else
         {
             foreach (var prop in Model.Data.Properties)
             {
-@:@(Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((prop, prop.GoType.Chain, assigner + ".", Model.FieldDefs)))
+@:@(IncludeSelf(prop, prop.GoType.Chain, GetNewScope(Model.Scope)))
             }
         }
     }
     else
     {
+        var nonTermsLeft = Model.NonTermTypes.Skip(1);
+        var (fieldVarName, iteratorVarName, valueVarName) = GetNonTerminalVariableNames(nonTermsLeft.Count());
+        var keyVarName = Model.NonTermTypes.First() == GoSDKNonTerminalTypes.StringMap ? fieldVarName + "___key" : "_";
+
+@:@(Indentation)@(fieldVarName) := make([]interface{} / map[string]string?)
+@:@(Indentation)for @(keyVarName), @(iteratorVarName) := range @(value) {
+
+        Indentation.Indent();
+        Model.FieldDefs.Push(new Dictionary<string, string>());
+        Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, valueVarName);
+        if (nonTermsLeft.Any() || Model.Data.GoType.Terminal == GoSDKTerminalTypes.Complex)
+        {
+@:@(Indentation)@(valueVarName) := make(map[string]interface{})
+@:@(IncludeSelf(Model.Data, nonTermsLeft, GetNewScope(iteratorVarName)))
+        }
+        else
+        {
+@:@(Indentation)@(valueVarName) := @(iteratorVarName).(?)
+        }
+
         switch (Model.NonTermTypes.First())
         {
             case GoSDKNonTerminalTypes.Array:
-
-                var childNestedCount = Model.NonTermTypes.Count() - 1;
-                var fieldName = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Data.BackingField);
-                if (nestedCount > 0)
-                {
-                    fieldName += nestedCount;
-                }
-
-@:@(Indentation)@(fieldName) := make([]interface{}?)
-
-                var childAssigner = CodeNamer.GetAzureRmPropPathLocalVarName(Model.Data.PropertyPath.SplitPathStrings().Skip(1));
-                if (childNestedCount > 0)
-                {
-                    childAssigner += childNestedCount;
-                }
-
-@:@(Indentation)for _, @(childAssigner) := range *@(assigner) {
-
-                Indentation.Indent();
-                Model.FieldDefs.Push(new Dictionary<string, string>());
-
-@:@(Indentation)@(fieldName)___value := @(Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex ? childAssigner + ".(?)" : "make(map[string]interface{})")
-
-                Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, fieldName + "___value");
-
-@:@(Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((Model.Data, Model.NonTermTypes.Skip(1), childAssigner + ".", Model.FieldDefs)))
-@:@(Indentation)@(fieldName) = append(@(fieldName), @(fieldName)___value)
-
-                Model.FieldDefs.Pop();
-                Indentation.Outdent();
-
-@:@(Indentation)}
-@:@(Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((Model.Data.BackingField, fieldName, Model.FieldDefs)))
-
+@:@(Indentation)@(fieldVarName) = append(@(fieldVarName), @(valueVarName))
                 break;
             case GoSDKNonTerminalTypes.StringMap:
-@:@(Indentation)// MAP IS NOT IMPLEMENTED YET
+@:@(Indentation)@(fieldVarName)[@(keyVarName)] = *@(valueVarName)
                 break;
         }
+
+        Model.FieldDefs.Pop();
+        Indentation.Outdent();
+
+@:@(Indentation)}
+@:@(IncludeStoreFields(Model.Data.BackingField, fieldVarName))
+
     }
 }

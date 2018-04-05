@@ -28,9 +28,12 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
 
         fieldDefs.Clear();
         fieldDefs.Push(new Dictionary<string, string>());
-        foreach (var resp in invocation.ResponsesRoot.Children)
+        foreach (var respStatus in invocation.ResponsesRoot.Children)
         {
+            foreach (var resp in respStatus.Children)
+            {
 @:@(Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((resp, resp.GoType.Chain, "response.", fieldDefs)))
+            }
         }
     }
 
