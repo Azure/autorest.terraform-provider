@@ -76,8 +76,11 @@ namespace AutoRest.Terraform
         [JsonProperty("name")]
         public string ResourceName { get; private set; }
 
-        [JsonProperty("imports")]
+        [JsonProperty("import")]
         public IDictionary<string, string> ImportCandidates { get; private set; }
+
+        [JsonProperty("typedef")]
+        public IEnumerable<TypeDefinition> TypeDefinitions { get; private set; }
 
         [JsonProperty("create")]
         public IEnumerable<MethodDefinition> CreateMethods { get; private set; }
@@ -90,6 +93,15 @@ namespace AutoRest.Terraform
 
         [JsonProperty("delete")]
         public IEnumerable<MethodDefinition> DeleteMethods { get; private set; }
+
+        public sealed class TypeDefinition
+        {
+            [JsonProperty("type")]
+            public string Path { get; private set; }
+
+            [JsonProperty("package")]
+            public string Package { get; private set; }
+        }
 
         public sealed class MethodDefinition
         {

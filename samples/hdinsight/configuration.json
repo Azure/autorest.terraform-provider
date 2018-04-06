@@ -1,13 +1,19 @@
 {
     "name": "HD Insight Clusters",
     "spec": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/hdinsight/resource-manager/Microsoft.HDInsight/preview/2015-03-01-preview/cluster.json",
-    "imports": {
+    "import": {
         "fmt": "fmt",
         "log": "log",
         "net/http": "net/http",
         "strings": "strings",
-        "schema": "github.com/hashicorp/terraform/helper/schema"
+        "schema": "github.com/hashicorp/terraform/helper/schema",
+        "utils": "github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils",
+        "hdinsight": "github.com/Azure/azure-sdk-for-go/services/hdinsight/mgmt/2015-03-01-preview/hdinsight"
     },
+    "typedef": [{
+        "type": "{:**:}",
+        "package": "hdinsight"
+    }],
     "create": [{
         "method": "HDInsightManagementClient/Clusters/Create",
         "schema": {
@@ -15,7 +21,11 @@
             "flatten": [{
                 "source": "{:**:}",
                 "target": "/",
-                "priority": 10
+                "priority": "Lowest"
+            }],
+            "import": [{
+                "type": "{:**:}",
+                "package": "hdinsight"
             }]
         }
     }],
@@ -26,7 +36,7 @@
             "flatten": [{
                 "source": "{:**:}",
                 "target": "/",
-                "priority": 10
+                "priority": "Lowest"
             }]
         }
     }],
@@ -37,7 +47,7 @@
             "flatten": [{
                 "source": "{:**:}",
                 "target": "/",
-                "priority": 10
+                "priority": "Lowest"
             }]
         }
     }],
@@ -48,7 +58,7 @@
             "flatten": [{
                 "source": "{:**:}",
                 "target": "/",
-                "priority": 10
+                "priority": "Lowest"
             }]
         }
     }]

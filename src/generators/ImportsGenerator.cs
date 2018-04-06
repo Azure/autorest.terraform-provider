@@ -8,9 +8,16 @@ namespace AutoRest.Terraform
         : TfGeneratorBase<ImportsTemplate, ImportsGenerator>
     {
         public string PackageName => Settings.StandardSettings.Namespace;
-        public IEnumerable<(string Alias, string Package)> References
+        public IEnumerable<string> SystemReferences
             => from r in references
                let pkg = Settings.Metadata.ImportCandidates[r]
+               where r == pkg
+               select pkg;
+
+        public IEnumerable<(string Alias, string Package)> LibraryReferences
+            => from r in references
+               let pkg = Settings.Metadata.ImportCandidates[r]
+               where r != pkg
                let alias = CodeNamer.ExtractAliasFromGoPackage(pkg)
                select (alias == r ? string.Empty : r, pkg);
 

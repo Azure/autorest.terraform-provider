@@ -1,15 +1,10 @@
-using AutoRest.Core.Model;
-using System.Collections.Generic;
 using System.Linq;
-using static AutoRest.Core.Utilities.DependencyInjection;
-using static AutoRest.Terraform.TfProviderMetadata;
-using static AutoRest.Terraform.Utilities;
 
 namespace AutoRest.Terraform
 {
     /// <summary>
-    /// Set <see cref="CodeModelTf.CreateInvocations"/>, <see cref="CodeModelTf.ReadInvocations"/>, <see cref="CodeModelTf.UpdateInvocations"/>
-    /// and <see cref="CodeModelTf.DeleteInvocations"/> based on the filtering information provided in <see cref="SchemaDefinition.Excludes"/>.
+    /// Normalize the whole <see cref="CodeModelTf"/> using the following steps:
+    ///   1. Remove all complex schema fields with no children
     /// </summary>
     internal class NormalizeTransformer
         : ITfProviderTransformer

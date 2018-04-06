@@ -42,6 +42,10 @@
         if (Model.Type.Terminal == GoSDKTerminalTypes.Complex)
         {
             sdkTerminal = Model.Type.OriginalTerminalType.Name;
+            if (Model.Type.OriginalTerminalType is CompositeTypeTf complex)
+            {
+                sdkTerminal = $"{ReferencePackage(complex.DefinedPackage)}.{sdkTerminal}";
+            }
         }
         if (prevNonTerm == GoSDKNonTerminalTypes.Array)
         {

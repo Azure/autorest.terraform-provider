@@ -14,7 +14,7 @@ namespace AutoRest.Terraform
     {
         public const string ModelPathSeparator = "/";
         private const string AttributeStart = "[", AttributeEnd = "]", ExtensionStart = "{:", ExtensionEnd = ":}";
-        private const string ParameterRootPath = "parameter", ResponseRootPath = "response";
+        private const string ParameterRootPath = "parameter", ResponseRootPath = "response", TypeRootPath = "type";
         private static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();
 
         private const string AnyPathExtName = "**", AnySinglePathExtName = "*", ParameterExtName = "p", ResponseExtName = "r";
@@ -35,6 +35,7 @@ namespace AutoRest.Terraform
         public static string ToPathString(this KeyValuePair<HttpStatusCode, Response> response, bool isHeader)
             => ResponseRootPath + ((int)response.Key).ToAttributeString() + (isHeader ? ResponseHeaderAttribute : ResponseBodyAttribute);
         public static string ToPathString(this Property property, string parentPath) => parentPath + ModelPathSeparator + property.GetClientName();
+        public static string ToPathString(this CompositeTypeTf type) => TypeRootPath + ModelPathSeparator + type.Name;
 
 
         private const string ExtensionParamPattern = "[a-zA-Z0-9*]+", ExtensionNameGroup = "extname", ExtensionParamGroup = "extparam";

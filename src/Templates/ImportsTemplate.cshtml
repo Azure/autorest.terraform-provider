@@ -8,11 +8,14 @@ package @Model.PackageName
 import (
 @{ 
     Indentation.Indent();
-    foreach (var reference in Model.References)
+    foreach (var reference in Model.SystemReferences)
     {
-
+@:@(Indentation)"@reference"
+    }
+@EmptyLine
+    foreach (var reference in Model.LibraryReferences)
+    {
 @:@(Indentation)@(string.IsNullOrEmpty(reference.Alias) ? string.Empty : reference.Alias + " ")"@reference.Package"
-
     }
     Indentation.Outdent();
 }
