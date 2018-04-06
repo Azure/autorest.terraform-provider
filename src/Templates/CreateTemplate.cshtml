@@ -23,7 +23,24 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
         }
 
 @EmptyLine
-@:@(Indentation)// Call the function with parameters, and returns response
+@:@(Indentation)future, err := client.@(invocation.OriginalMethod.Name)(ctx, @(string.Join(", ", invocation.ArgumentsRoot.Children.Select(arg => arg.Name))))
+@:@(Indentation)if err != nil {
+        Indentation.Indent();
+@:@(Indentation)return @(OtherModel<ImportsGenerator>().Reference("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+        Indentation.Outdent();
+@:@(Indentation)}
+@:@(Indentation)err = future.WaitForCompletion(ctx, client.Client)
+@:@(Indentation)if err != nil {
+        Indentation.Indent();
+@:@(Indentation)return @(OtherModel<ImportsGenerator>().Reference("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+        Indentation.Outdent();
+@:@(Indentation)}
+@:@(Indentation)response, err := future.Result(client)
+@:@(Indentation)if err != nil {
+        Indentation.Indent();
+@:@(Indentation)return @(OtherModel<ImportsGenerator>().Reference("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+        Indentation.Outdent();
+@:@(Indentation)}
 @EmptyLine
 
         fieldDefs.Clear();
@@ -36,6 +53,9 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
             }
         }
     }
+
+@EmptyLine
+@:@(Indentation)return nil
 
     Indentation.Outdent();
 }
