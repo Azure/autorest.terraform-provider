@@ -1,0 +1,66 @@
+@using AutoRest.Terraform
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@inherits TfProviderTemplateBase<(GoSDKTypeChain Type, string Format)>
+@functions{
+    private static readonly IDictionary<GoSDKNonTerminalTypes, (string Tf, string SDK)> NonTerminalMapping
+        = new Dictionary<GoSDKNonTerminalTypes, (string, string)>
+        {
+            { GoSDKNonTerminalTypes.Array, ("[]", "*[]") },
+            { GoSDKNonTerminalTypes.StringMap, ("map[string]", "*map[string]") }
+        };
+    private static readonly IDictionary<GoSDKTerminalTypes, (string Tf, string SDK)> TerminalMapping
+        = new Dictionary<GoSDKTerminalTypes, (string, string)>
+        {
+            { GoSDKTerminalTypes.Boolean, ("bool", "*bool") },
+            { GoSDKTerminalTypes.Complex, ("map[string]interface{}", null) },
+            { GoSDKTerminalTypes.Enum, ("string", "*string") },
+            { GoSDKTerminalTypes.Int32, ("int32", "*int32") },
+            { GoSDKTerminalTypes.String, ("string", "*string") },
+        };
+
+    private string StripPointer(string type) => type.TrimStart('*');
+}
+@switch (Model.Format)
+{
+    case "sdk":
+        // Azure Go SDK types like "map[string][]ComplexName"
+        var sdkNonTerminals = string.Empty;
+        GoSDKNonTerminalTypes? prevNonTerm = null;
+        foreach (var nonTerm in Model.Type.Chain)
+        {
+            var nonTermTypeStr = NonTerminalMapping[nonTerm].SDK;
+            if (prevNonTerm == GoSDKNonTerminalTypes.Array)
+            {
+                nonTermTypeStr = StripPointer(nonTermTypeStr);
+            }
+            sdkNonTerminals += nonTermTypeStr;
+            prevNonTerm = nonTerm;
+        }
+        var sdkTerminal = TerminalMapping[Model.Type.Terminal].SDK;
+        if (Model.Type.Terminal == GoSDKTerminalTypes.Complex)
+        {
+            sdkTerminal = Model.Type.OriginalTerminalType.Name;
+        }
+        if (prevNonTerm == GoSDKNonTerminalTypes.Array)
+        {
+            sdkTerminal = StripPointer(sdkTerminal);
+        }
+@:@(StripPointer($"{sdkNonTerminals}{sdkTerminal}"))
+        break;
+
+    case "tf":
+        // Schema field types like "[]interface{}"
+        if (Model.Type.Chain.Any())
+        {
+@:@(NonTerminalMapping[Model.Type.Chain.First()].Tf)interface{}
+        }
+        else
+        {
+@:@(TerminalMapping[Model.Type.Terminal].Tf)
+        }
+        break;
+    default:
+        throw new NotSupportedException($"{Model.Format} is not a supported Type format");
+}

@@ -3,29 +3,31 @@
 @using System.Collections.Generic
 @using System.Diagnostics
 @using System.Linq
-@inherits TfProviderTemplateBase<(GoSDKTypedData Data, IEnumerable<GoSDKNonTerminalTypes> NonTermTypes, string Scope, Stack<IDictionary<string, string>> FieldDefs)>
+@inherits TfProviderTemplateBase<(GoSDKTypedData Data, GoSDKTypeChain Type, string Scope, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
-    private string GetNewScope(string scope) => (scope + (Model.Data.GoType.Chain.Count == 0 ? Model.Data.Name : string.Empty)).TrimEnd('.') + ".";
+    private string GetNewScope(string scope) => (scope + (Model.Data.GoType.Chain.Count() == 0 ? Model.Data.Name : string.Empty)).TrimEnd('.') + ".";
     private (string FieldVarName, string IteratorKeyVarName, string IteratorVarName, string ItemValueVarName) GetNonTerminalVariableNames()
     {
-        var ntCount = Model.NonTermTypes.Count() - 1;
+        var ntCount = Model.Type.Chain.Count() - 1;
         var postFix = (ntCount > 0 ? ntCount.ToString() : string.Empty);
         var field = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Data.BackingField) + postFix;
         var iterator = CodeNamer.GetAzureRmPropPathLocalVarName(Model.Data.PropertyPath.SplitPathStrings().Skip(1)) + postFix;
-        var iteratorKey = (Model.NonTermTypes.First() == GoSDKNonTerminalTypes.StringMap ? field + "___key" : "_");
+        var iteratorKey = (Model.Type.Chain.First() == GoSDKNonTerminalTypes.StringMap ? field + "___key" : "_");
         return (field, iteratorKey, iterator, field + "___value");
     }
+    private string TypeToString(GoSDKTypeChain type, string format)
+        => Include<GoSDKTypeChainToString, (GoSDKTypeChain, string)>((type, format));
     private string IncludeStoreFields(TfProviderField field, string value)
-        => Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((field, value, Model.FieldDefs));
-    private string IncludeSelf(GoSDKTypedData data, IEnumerable<GoSDKNonTerminalTypes> nonTerms, string scope)
-        => Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>(
-            (data, nonTerms, scope, Model.FieldDefs));
+    => Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>((field, value, Model.FieldDefs));
+    private string IncludeSelf(GoSDKTypedData data, GoSDKTypeChain type, string scope)
+        => Include<SDKToFieldsSubTemplate, (GoSDKTypedData, GoSDKTypeChain, string, Stack<IDictionary<string, string>>)>(
+            (data, type, scope, Model.FieldDefs));
 }
 @{
-    Debug.Assert(Model.Data != null && Model.NonTermTypes != null && Model.Scope != null);
+    Debug.Assert(Model.Data != null && Model.Type != null && Model.Scope != null);
 
     var value = "*" + Model.Scope + Model.Data.Name;
-    if (!Model.NonTermTypes.Any())
+    if (!Model.Type.Chain.Any())
     {
         if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
         {
@@ -35,32 +37,33 @@
         {
             foreach (var prop in Model.Data.Properties)
             {
-@:@(IncludeSelf(prop, prop.GoType.Chain, GetNewScope(Model.Scope)))
+@:@(IncludeSelf(prop, prop.GoType, GetNewScope(Model.Scope)))
             }
         }
     }
     else
     {
-        var nonTermsLeft = Model.NonTermTypes.Skip(1);
+        var valueType = Model.Type.StripNonTerminal();
         var (fieldVarName, keyVarName, iteratorVarName, valueVarName) = GetNonTerminalVariableNames();
+        var isArray = Model.Type.Chain.First() == GoSDKNonTerminalTypes.Array;
 
-@:@(Indentation)@(fieldVarName) := make([]interface{} / map[string]string?)
+@:@(Indentation)@(fieldVarName) := make(@(TypeToString(Model.Type, "tf"))@(isArray ? ", 0" : string.Empty))
 @:@(Indentation)for @(keyVarName), @(iteratorVarName) := range @(value) {
 
         Indentation.Indent();
         Model.FieldDefs.Push(new Dictionary<string, string>());
         Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, valueVarName);
-        if (nonTermsLeft.Any() || Model.Data.GoType.Terminal == GoSDKTerminalTypes.Complex)
+        if (!valueType.IsSimple)
         {
 @:@(Indentation)@(valueVarName) := make(map[string]interface{})
-@:@(IncludeSelf(Model.Data, nonTermsLeft, GetNewScope(iteratorVarName)))
+@:@(IncludeSelf(Model.Data, valueType, GetNewScope(iteratorVarName)))
         }
         else
         {
-@:@(Indentation)@(valueVarName) := @(iteratorVarName).(?)
+@:@(Indentation)@(valueVarName) := @(iteratorVarName).(@(TypeToString(valueType, "tf")))
         }
 
-        switch (Model.NonTermTypes.First())
+        switch (Model.Type.Chain.First())
         {
             case GoSDKNonTerminalTypes.Array:
 @:@(Indentation)@(fieldVarName) = append(@(fieldVarName), @(valueVarName))

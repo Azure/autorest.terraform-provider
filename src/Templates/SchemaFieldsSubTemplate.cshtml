@@ -34,7 +34,7 @@
     }
 }
 @{
-    var schemaPkg = OtherModel<ImportsGenerator>().Reference("schema");
+    var schemaPkg = ReferencePackage("schema");
 
 @:@(Indentation)Schema: map[string]*@(schemaPkg).Schema {
 
@@ -60,7 +60,7 @@
 @:@(Indentation)Elem: &@(schemaPkg).Resource {
         }
 
-        if (goType.Chain.Count > 0)
+        if (goType.Chain.Count() > 0)
         {
             Indentation.Indent();
             nestedTypesCount++;

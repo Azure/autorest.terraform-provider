@@ -5,7 +5,7 @@
 @using System.Linq
 @inherits TfProviderTemplateBase<CreateGenerator>
 
-func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema")).ResourceData, meta interface{}) error {
+func @(Model.FunctionName)(d *@(ReferencePackage("schema")).ResourceData, meta interface{}) error {
 @{
     Indentation.Indent();
 
@@ -19,26 +19,26 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
         fieldDefs.Push(new Dictionary<string, string>());
         foreach (var arg in invocation.ArgumentsRoot.Children)
         {
-@:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType.Chain, string.Empty, fieldDefs)))
+@:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, GoSDKTypeChain, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType, string.Empty, fieldDefs)))
         }
 
 @EmptyLine
 @:@(Indentation)future, err := client.@(invocation.OriginalMethod.Name)(ctx, @(string.Join(", ", invocation.ArgumentsRoot.Children.Select(arg => arg.Name))))
 @:@(Indentation)if err != nil {
         Indentation.Indent();
-@:@(Indentation)return @(OtherModel<ImportsGenerator>().Reference("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
         Indentation.Outdent();
 @:@(Indentation)}
 @:@(Indentation)err = future.WaitForCompletion(ctx, client.Client)
 @:@(Indentation)if err != nil {
         Indentation.Indent();
-@:@(Indentation)return @(OtherModel<ImportsGenerator>().Reference("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
         Indentation.Outdent();
 @:@(Indentation)}
 @:@(Indentation)response, err := future.Result(client)
 @:@(Indentation)if err != nil {
         Indentation.Indent();
-@:@(Indentation)return @(OtherModel<ImportsGenerator>().Reference("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
         Indentation.Outdent();
 @:@(Indentation)}
 @EmptyLine
@@ -49,7 +49,7 @@ func @(Model.FunctionName)(d *@(OtherModel<ImportsGenerator>().Reference("schema
         {
             foreach (var resp in respStatus.Children)
             {
-@:@(Include<SDKToFieldsSubTemplate, (GoSDKTypedData, IEnumerable<GoSDKNonTerminalTypes>, string, Stack<IDictionary<string, string>>)>((resp, resp.GoType.Chain, "response.", fieldDefs)))
+@:@(Include<SDKToFieldsSubTemplate, (GoSDKTypedData, GoSDKTypeChain, string, Stack<IDictionary<string, string>>)>((resp, resp.GoType, "response.", fieldDefs)))
             }
         }
     }

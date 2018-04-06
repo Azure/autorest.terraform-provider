@@ -27,8 +27,6 @@ namespace AutoRest.Terraform
             { KnownPrimaryType.Object, GoSDKTerminalTypes.String }
         };
 
-        public GoSDKTypeChain(GoSDKTerminalTypes terminal) => Terminal = terminal;
-
         public GoSDKTypeChain(IModelType type)
         {
             Debug.Assert(type != null);
@@ -51,19 +49,34 @@ namespace AutoRest.Terraform
                         break;
                     case SequenceType sequence:
                         type = sequence.ElementType;
-                        Chain.Add(GoSDKNonTerminalTypes.Array);
+                        chain.Add(GoSDKNonTerminalTypes.Array);
                         break;
                     case DictionaryType dictionary:
                         type = dictionary.ValueType;
-                        Chain.Add(GoSDKNonTerminalTypes.StringMap);
+                        chain.Add(GoSDKNonTerminalTypes.StringMap);
                         break;
                 }
             } while (type != null);
         }
 
-        public IList<GoSDKNonTerminalTypes> Chain { get; } = new List<GoSDKNonTerminalTypes>();
+        public GoSDKTypeChain(GoSDKTerminalTypes terminal, IEnumerable<GoSDKNonTerminalTypes> nonTerminals = null)
+        {
+            chain.AddRange(nonTerminals ?? Enumerable.Empty<GoSDKNonTerminalTypes>());
+            Terminal = terminal;
+        }
+
+        public IEnumerable<GoSDKNonTerminalTypes> Chain => chain;
         public GoSDKTerminalTypes Terminal { get; }
-        public IModelType OriginalTerminalType { get; }
+        public IModelType OriginalTerminalType { get; private set; }
+        public bool IsSimple => Chain.Count() == 0 && Terminal != GoSDKTerminalTypes.Complex;
+
+        public GoSDKTypeChain StripNonTerminal() => new GoSDKTypeChain(Terminal, Chain.Skip(1))
+        {
+            OriginalTerminalType = OriginalTerminalType
+        };
+
+
+        private List<GoSDKNonTerminalTypes> chain = new List<GoSDKNonTerminalTypes>();
 
 
         public override string ToString() => $"{string.Join(", ", Chain.Select(t => t.ToString()).Concat(Enumerable.Repeat(Terminal.ToString(), 1)))}";

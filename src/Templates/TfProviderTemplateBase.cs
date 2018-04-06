@@ -31,6 +31,8 @@ namespace AutoRest.Terraform
             where V : ITfProviderGenerator
             => Singleton<V>.Instance;
 
+        protected string ReferencePackage(string package) => OtherModel<ImportsGenerator>().Reference(package);
+
         protected string Include<TTemplate, TModel>(TModel model, bool inheritIndentation = true)
             where TTemplate : TfProviderTemplateBase<TModel>, new()
         {

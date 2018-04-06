@@ -1,11 +1,11 @@
 ﻿@using AutoRest.Terraform
 @using AutoRest.Terraform.Templates
 @inherits TfProviderTemplateBase<SchemaGenerator>
-func @(Model.FunctionName)() *@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+func @(Model.FunctionName)() *@(ReferencePackage("schema")).Resource {
 @{
     Indentation.Indent();
 
-@:@(Indentation)return &@(OtherModel<ImportsGenerator>().Reference("schema")).Resource {
+@:@(Indentation)return &@(ReferencePackage("schema")).Resource {
 
     Indentation.Indent();
 

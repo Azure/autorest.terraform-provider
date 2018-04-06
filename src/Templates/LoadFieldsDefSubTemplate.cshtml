@@ -6,6 +6,8 @@
 @inherits TfProviderTemplateBase<(TfProviderField Field, string TargetFormat, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
     private string GetFieldVariableName(TfProviderField field) => "p" + CodeNamer.GetAzureRmFieldLocalVarName(field);
+    private string TypeToString(GoSDKTypeChain type, string format)
+        => Include<GoSDKTypeChainToString, (GoSDKTypeChain, string)>((type, format));
     private string IncludeSelf(TfProviderField field)
         => Include<LoadFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>(
             (field, null, Model.FieldDefs));
@@ -30,10 +32,10 @@
 
     if (Model.Field.Parent.IsRoot)
     {
-@:@(Indentation)@(string.Format(actualTargetFormat, $"d.Get(\"{Model.Field.Name}\")"))
+@:@(Indentation)@(string.Format(actualTargetFormat, $"d.Get(\"{Model.Field.Name}\")")).(@(TypeToString(Model.Field.GoType, "tf")))
     }
     else
     {
-@:@(Indentation)@(string.Format(actualTargetFormat, $"{definition[Model.Field.Parent.PropertyPath]}[\"{Model.Field.Name}\"]"))
+@:@(Indentation)@(string.Format(actualTargetFormat, $"{definition[Model.Field.Parent.PropertyPath]}[\"{Model.Field.Name}\"]")).(@(TypeToString(Model.Field.GoType, "tf")))
     }
 }
