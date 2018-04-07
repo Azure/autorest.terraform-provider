@@ -6,14 +6,11 @@
 @inherits TfProviderTemplateBase<(GoSDKTypedData Data, GoSDKTypeChain Type, string Scope, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
     private string GetNewScope(string scope) => (scope + (Model.Data.GoType.Chain.Count() == 0 ? Model.Data.Name : string.Empty)).TrimEnd('.') + ".";
-    private (string FieldVarName, string IteratorKeyVarName, string IteratorVarName, string ItemValueVarName) GetNonTerminalVariableNames()
+    private string GetNonTerminalBaseVariableName()
     {
         var ntCount = Model.Type.Chain.Count() - 1;
-        var postFix = (ntCount > 0 ? ntCount.ToString() : string.Empty);
-        var field = "r" + CodeNamer.GetAzureRmFieldLocalVarName(Model.Data.BackingField) + postFix;
-        var iterator = CodeNamer.GetAzureRmPropPathLocalVarName(Model.Data.PropertyPath.SplitPathStrings().Skip(1)) + postFix;
-        var iteratorKey = (Model.Type.Chain.First() == GoSDKNonTerminalTypes.StringMap ? field + "___key" : "_");
-        return (field, iteratorKey, iterator, field + "___value");
+        var postfix = (ntCount > 0 ? ntCount.ToString() : string.Empty);
+        return CodeNamer.GetAzureRmPropPathLocalVarBaseName(Model.Data.BackingField) + postfix;
     }
     private string TypeToString(GoSDKTypeChain type, string format)
         => Include<GoSDKTypeChainToString, (GoSDKTypeChain, string)>((type, format));
@@ -44,32 +41,37 @@
     else
     {
         var valueType = Model.Type.StripNonTerminal();
-        var (fieldVarName, keyVarName, iteratorVarName, valueVarName) = GetNonTerminalVariableNames();
+        var baseVarName = GetNonTerminalBaseVariableName();
         var isArray = Model.Type.Chain.First() == GoSDKNonTerminalTypes.Array;
 
-@:@(Indentation)@(fieldVarName) := make(@(TypeToString(Model.Type, "tf"))@(isArray ? ", 0" : string.Empty))
-@:@(Indentation)for @(keyVarName), @(iteratorVarName) := range @(value) {
+        var tempName = "tmpRespOf" + baseVarName;
+        var keyVarName = (isArray ? "_" : "tmpRespKeyOf" + baseVarName);
+        var itrVarName = "tmpRespItemOf" + baseVarName;
+        var valVarName = "tmpRespValueOf" + baseVarName;
+
+@:@(Indentation)@(tempName) := make(@(TypeToString(Model.Type, "tf"))@(isArray ? ", 0" : string.Empty))
+@:@(Indentation)for @(keyVarName), @(itrVarName) := range @(value) {
 
         Indentation.Indent();
         Model.FieldDefs.Push(new Dictionary<string, string>());
-        Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, valueVarName);
+        Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, valVarName);
         if (!valueType.IsSimple)
         {
-@:@(Indentation)@(valueVarName) := make(map[string]interface{})
-@:@(IncludeSelf(Model.Data, valueType, GetNewScope(iteratorVarName)))
+@:@(Indentation)@(valVarName) := make(map[string]interface{})
+@:@(IncludeSelf(Model.Data, valueType, GetNewScope(itrVarName)))
         }
         else
         {
-@:@(Indentation)@(valueVarName) := @(iteratorVarName).(@(TypeToString(valueType, "tf")))
+@:@(Indentation)@(valVarName) := @(itrVarName).(@(TypeToString(valueType, "tf")))
         }
 
         switch (Model.Type.Chain.First())
         {
             case GoSDKNonTerminalTypes.Array:
-@:@(Indentation)@(fieldVarName) = append(@(fieldVarName), @(valueVarName))
+@:@(Indentation)@(tempName) = append(@(tempName), @(valVarName))
                 break;
             case GoSDKNonTerminalTypes.StringMap:
-@:@(Indentation)@(fieldVarName)[@(keyVarName)] = *@(valueVarName)
+@:@(Indentation)@(tempName)[@(keyVarName)] = *@(valVarName)
                 break;
         }
 
@@ -77,7 +79,7 @@
         Indentation.Outdent();
 
 @:@(Indentation)}
-@:@(IncludeStoreFields(Model.Data.BackingField, fieldVarName))
+@:@(IncludeStoreFields(Model.Data.BackingField, tempName))
 
     }
 }

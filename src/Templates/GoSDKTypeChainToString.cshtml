@@ -1,6 +1,7 @@
 @using AutoRest.Terraform
 @using System
 @using System.Collections.Generic
+@using System.Diagnostics
 @using System.Linq
 @inherits TfProviderTemplateBase<(GoSDKTypeChain Type, string Format)>
 @functions{
@@ -10,14 +11,14 @@
             { GoSDKNonTerminalTypes.Array, ("[]", "*[]") },
             { GoSDKNonTerminalTypes.StringMap, ("map[string]", "*map[string]") }
         };
-    private static readonly IDictionary<GoSDKTerminalTypes, (string Tf, string SDK)> TerminalMapping
-        = new Dictionary<GoSDKTerminalTypes, (string, string)>
+    private static readonly IDictionary<GoSDKTerminalTypes, (string Tf, string SDK, string SDKConv)> TerminalMapping
+        = new Dictionary<GoSDKTerminalTypes, (string, string, string)>
         {
-            { GoSDKTerminalTypes.Boolean, ("bool", "*bool") },
-            { GoSDKTerminalTypes.Complex, ("map[string]interface{}", null) },
-            { GoSDKTerminalTypes.Enum, ("string", "*string") },
-            { GoSDKTerminalTypes.Int32, ("int32", "*int32") },
-            { GoSDKTerminalTypes.String, ("string", "*string") },
+            { GoSDKTerminalTypes.Boolean, ("bool", "*bool", "Bool") },
+            { GoSDKTerminalTypes.Complex, ("map[string]interface{}", null, null) },
+            { GoSDKTerminalTypes.Enum, ("string", "*string", "String") },
+            { GoSDKTerminalTypes.Int32, ("int32", "*int32", "Int32") },
+            { GoSDKTerminalTypes.String, ("string", "*string", "String") },
         };
 
     private string StripPointer(string type) => type.TrimStart('*');
@@ -65,6 +66,13 @@
 @:@(TerminalMapping[Model.Type.Terminal].Tf)
         }
         break;
+
+    case "sdk-convert":
+        // Azure Go SDK type conversion functions like "util.String"
+        Debug.Assert(Model.Type.IsSimple);
+@:@(ReferencePackage("utils")).@(TerminalMapping[Model.Type.Terminal].SDKConv)
+        break;
+
     default:
         throw new NotSupportedException($"{Model.Format} is not a supported Type format");
 }

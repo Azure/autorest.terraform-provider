@@ -20,8 +20,13 @@ namespace AutoRest.Terraform
 
         public virtual string GetAzureRmResourceName(string name) => JoinNonEmpty("Resource Arm", name);
         public virtual string GetAzureRmSchemaName(string name) => name.Underscore();
-        public virtual string GetAzureRmPropPathLocalVarName(IEnumerable<string> paths) => GetGoLocalVariableName(string.Join(' ', paths));
-        public virtual string GetAzureRmFieldLocalVarName(TfProviderField field) => field.PropertyPath.Replace("/", "__");
+
+        public virtual string GetAzureRmPropPathLocalVarName(TfProviderField field) => GetAzureRmPropPathLocalVarName(field.PropertyPath.SplitPathStrings());
+        public virtual string GetAzureRmPropPathLocalVarName(GoSDKTypedData data) => GetAzureRmPropPathLocalVarName(data.PropertyPath.SplitPathStrings().Skip(1));
+        protected virtual string GetAzureRmPropPathLocalVarName(IEnumerable<string> paths) => GetGoLocalVariableName(string.Join(' ', paths));
+        public virtual string GetAzureRmPropPathLocalVarBaseName(TfProviderField field) => GetAzureRmPropPathLocalVarBaseName(field.PropertyPath.SplitPathStrings());
+        public virtual string GetAzureRmPropPathLocalVarBaseName(GoSDKTypedData data) => GetAzureRmPropPathLocalVarBaseName(data.PropertyPath.SplitPathStrings().Skip(1));
+        protected virtual string GetAzureRmPropPathLocalVarBaseName(IEnumerable<string> paths) => GetAzureRmPropPathLocalVarName(paths).Pascalize();
 
         public virtual string GetResourceFileName(string name) => TitleUnderscoreCase(GetAzureRmResourceName(name));
 
