@@ -16,7 +16,7 @@
         {
             { GoSDKTerminalTypes.Boolean, ("bool", "*bool", "Bool") },
             { GoSDKTerminalTypes.Complex, ("map[string]interface{}", null, null) },
-            { GoSDKTerminalTypes.Enum, ("string", "*string", "String") },
+            { GoSDKTerminalTypes.Enum, ("string", "*string", null) },
             { GoSDKTerminalTypes.Int32, ("int32", "*int32", "Int32") },
             { GoSDKTerminalTypes.String, ("string", "*string", "String") },
         };
@@ -70,7 +70,15 @@
     case "sdk-convert":
         // Azure Go SDK type conversion functions like "util.String"
         Debug.Assert(Model.Type.IsSimple);
+        if (Model.Type.Terminal == GoSDKTerminalTypes.Enum)
+        {
+            var enumType = (EnumTypeTf)Model.Type.OriginalTerminalType;
+@:@(ReferencePackage(enumType.DefinedPackage)).@enumType.Name
+        }
+        else
+        {
 @:@(ReferencePackage("utils")).@(TerminalMapping[Model.Type.Terminal].SDKConv)
+        }
         break;
 
     default:

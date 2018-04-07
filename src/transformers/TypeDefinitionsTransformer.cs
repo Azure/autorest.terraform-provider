@@ -32,11 +32,16 @@ namespace AutoRest.Terraform
 
         private void ResolvePackage()
         {
-            var matchedTypes = from t in CodeModel.AllModelTypes
+            var complexTypes = from t in CodeModel.AllComplexTypes
                                from r in Rules
                                where r.Pattern.IsMatch(t.ToPathString())
                                select new { Type = t, r.Definition };
-            matchedTypes.ForEach(m => m.Type.OriginalMetadata = m.Definition);
+            complexTypes.ForEach(m => m.Type.OriginalMetadata = m.Definition);
+            var enumTypes = from t in CodeModel.AllEnumTypes
+                            from r in Rules
+                            where r.Pattern.IsMatch(t.ToPathString())
+                            select new { Type = t, r.Definition };
+            enumTypes.ForEach(m => m.Type.OriginalMetadata = m.Definition);
         }
     }
 }

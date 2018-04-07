@@ -36,6 +36,7 @@ namespace AutoRest.Terraform
             => ResponseRootPath + ((int)response.Key).ToAttributeString() + (isHeader ? ResponseHeaderAttribute : ResponseBodyAttribute);
         public static string ToPathString(this Property property, string parentPath) => parentPath + ModelPathSeparator + property.GetClientName();
         public static string ToPathString(this CompositeTypeTf type) => TypeRootPath + ModelPathSeparator + type.Name;
+        public static string ToPathString(this EnumTypeTf type) => TypeRootPath + ModelPathSeparator + type.Name;
 
 
         private const string ExtensionParamPattern = "[a-zA-Z0-9*]+", ExtensionNameGroup = "extname", ExtensionParamGroup = "extparam";
