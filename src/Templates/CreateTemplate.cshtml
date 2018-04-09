@@ -19,7 +19,7 @@ func @(Model.FunctionName)(d *@(ReferencePackage("schema")).ResourceData, meta i
         fieldDefs.Push(new Dictionary<string, string>());
         foreach (var arg in invocation.ArgumentsRoot.Children)
         {
-@:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, GoSDKTypeChain, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType, string.Empty, fieldDefs)))
+@:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, GoSDKTypeChain, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType, null, fieldDefs)))
         }
 
 @EmptyLine

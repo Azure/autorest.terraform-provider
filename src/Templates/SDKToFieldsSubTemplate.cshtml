@@ -23,7 +23,8 @@
 @{
     Debug.Assert(Model.Data != null && Model.Type != null && Model.Scope != null);
 
-    var value = "*" + Model.Scope + Model.Data.Name;
+    var noIndirection = (Model.Type.IsSimple && Model.Type.Terminal == GoSDKTerminalTypes.Enum);
+    var value = (noIndirection ? string.Empty : "*") + Model.Scope + Model.Data.Name;
     if (!Model.Type.Chain.Any())
     {
         if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
@@ -62,7 +63,7 @@
         }
         else
         {
-@:@(Indentation)@(valVarName) := @(itrVarName).(@(TypeToString(valueType, "tf")))
+@:@(Indentation)@(valVarName) := @(isArray ? string.Empty : "*")@(itrVarName)
         }
 
         switch (Model.Type.Chain.First())
@@ -71,7 +72,7 @@
 @:@(Indentation)@(tempName) = append(@(tempName), @(valVarName))
                 break;
             case GoSDKNonTerminalTypes.StringMap:
-@:@(Indentation)@(tempName)[@(keyVarName)] = *@(valVarName)
+@:@(Indentation)@(tempName)[@(keyVarName)] = @(valVarName)
                 break;
         }
 
