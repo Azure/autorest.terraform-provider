@@ -11,19 +11,17 @@ namespace AutoRest.Terraform
     /// Set <see cref="CompositeTypeTf.OriginalMetadata"/> property according to the user definitions from <see cref="TypeDefinition"/>.
     /// </summary>
     internal class TypeDefinitionsTransformer
-        : ITfProviderTransformer
+        : TfProviderTransformerBase
     {
-        public void Transform(CodeModelTf model)
+        protected override void TransformCore()
         {
-            CodeModel = model;
-            RefreshRules();
+            SetupRules();
             ResolvePackage();
         }
 
-        private CodeModelTf CodeModel { get; set; }
-        private List<(Regex Pattern, TypeDefinition Definition)> Rules { get; } = new List<(Regex Pattern, TypeDefinition Definition)>();
+        private List<(Regex Pattern, TypeDefinition Definition)> Rules { get; } = new List<(Regex, TypeDefinition)>();
 
-        private void RefreshRules()
+        private void SetupRules()
         {
             Rules.Clear();
             Rules.AddRange(from def in Singleton<SettingsTf>.Instance.Metadata.TypeDefinitions

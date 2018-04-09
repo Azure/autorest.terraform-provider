@@ -23,6 +23,8 @@ namespace AutoRest.Terraform
     {
         public TypeDefinition OriginalMetadata { get; set; }
         public string DefinedPackage => OriginalMetadata.Package;
+
+        public void Rename(string name) => Name = name;
     }
 
     public class EnumTypeTf

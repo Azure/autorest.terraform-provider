@@ -11,18 +11,16 @@ namespace AutoRest.Terraform
     /// It also applies the flattening information defined in <see cref="SchemaDefinition.Flattens"/>.
     /// </summary>
     internal class NewFlattenFieldsTransformer
-        : ITfProviderTransformer
+        : TfProviderTransformerBase
     {
-        public void Transform(CodeModelTf model)
+        protected override void TransformCore()
         {
-            CodeModel = model;
-            model.CreateInvocations.ForEach(FlattenFields);
-            model.ReadInvocations.ForEach(FlattenFields);
-            model.UpdateInvocations.ForEach(FlattenFields);
-            model.DeleteInvocations.ForEach(FlattenFields);
+            CodeModel.CreateInvocations.ForEach(FlattenFields);
+            CodeModel.ReadInvocations.ForEach(FlattenFields);
+            CodeModel.UpdateInvocations.ForEach(FlattenFields);
+            CodeModel.DeleteInvocations.ForEach(FlattenFields);
         }
 
-        private CodeModelTf CodeModel { get; set; }
         private Stack<(Regex Pattern, TfProviderField ScopedField)> ScopeRules { get; } = new Stack<(Regex, TfProviderField)>();
         private SortedList<uint, (Regex Pattern, TfProviderField Target)> FlattenRules { get; } = new SortedList<uint, (Regex, TfProviderField)>();
 

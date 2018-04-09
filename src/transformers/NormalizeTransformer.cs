@@ -7,16 +7,9 @@ namespace AutoRest.Terraform
     ///   1. Remove all complex schema fields with no children
     /// </summary>
     internal class NormalizeTransformer
-        : ITfProviderTransformer
+        : TfProviderTransformerBase
     {
-        public void Transform(CodeModelTf model)
-        {
-            CodeModel = model;
-            ClearComplexWithNoChildrenFields();
-        }
-
-
-        private CodeModelTf CodeModel { get; set; }
+        protected override void TransformCore() => ClearComplexWithNoChildrenFields();
 
         private void ClearComplexWithNoChildrenFields()
         {

@@ -17,7 +17,7 @@ namespace AutoRest.Terraform
         private const string ParameterRootPath = "parameter", ResponseRootPath = "response", TypeRootPath = "type";
         private static readonly string ResponseHeaderAttribute = "Header".ToAttributeString(), ResponseBodyAttribute = "Body".ToAttributeString();
 
-        private const string AnyPathExtName = "**", AnySinglePathExtName = "*", ParameterExtName = "p", ResponseExtName = "r";
+        private const string AnyPathExtName = "**", AnySinglePathExtName = "*", ParameterExtName = "p", ResponseExtName = "r", TypeExtName = "t";
         public static readonly string AnyPathExtension = AnyPathExtName.ToExtensionString();
 
 
@@ -27,16 +27,17 @@ namespace AutoRest.Terraform
         private static string WrapByEscapedBraces(this object content) => $"{{{{{content}}}}}";
 
         public static string ExtractLastPath(this string path) => path.Substring(path.LastIndexOf(ModelPathSeparator) + 1);
+        public static string AppendChild(this string path, string child) => path + ModelPathSeparator + Regex.Escape(child);
         public static string AppendAnyChildrenPath(this string path) => Regex.Escape(path) + ModelPathSeparator + AnyPathExtension;
         public static string JoinPathStrings(params string[] paths) => string.Join(ModelPathSeparator, paths);
         public static string[] SplitPathStrings(this string path) => path.Split(ModelPathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
-        public static string ToPathString(this Parameter parameter) => ParameterRootPath + parameter.Location.ToAttributeString() + ModelPathSeparator + parameter.GetClientName();
+        public static string ToPathString(this Parameter parameter) => (ParameterRootPath + parameter.Location.ToAttributeString()).AppendChild(parameter.GetClientName());
         public static string ToPathString(this KeyValuePair<HttpStatusCode, Response> response, bool isHeader)
             => ResponseRootPath + ((int)response.Key).ToAttributeString() + (isHeader ? ResponseHeaderAttribute : ResponseBodyAttribute);
-        public static string ToPathString(this Property property, string parentPath) => parentPath + ModelPathSeparator + property.GetClientName();
-        public static string ToPathString(this CompositeTypeTf type) => TypeRootPath + ModelPathSeparator + type.Name;
-        public static string ToPathString(this EnumTypeTf type) => TypeRootPath + ModelPathSeparator + type.Name;
+        public static string ToPathString(this Property property, string parentPath) => parentPath.AppendChild(property.GetClientName());
+        public static string ToPathString(this CompositeTypeTf type) => TypeRootPath.AppendChild(type.Name);
+        public static string ToPathString(this EnumTypeTf type) => TypeRootPath.AppendChild(type.Name);
 
 
         private const string ExtensionParamPattern = "[a-zA-Z0-9*]+", ExtensionNameGroup = "extname", ExtensionParamGroup = "extparam";
@@ -51,7 +52,8 @@ namespace AutoRest.Terraform
             { (AnyPathExtName, 0), $@".*" },
             { (ParameterExtName, 0), $@"{Regex.Escape(ParameterRootPath)}{AnyParamAttributePattern}" },
             { (ParameterExtName, 1), $@"{Regex.Escape(ParameterRootPath)}{Regex.Escape(AttributeStart)}{WrapByFormatBraces(0)}{Regex.Escape(AttributeEnd)}" },
-            { (ResponseExtName, 0), $@"{Regex.Escape(ResponseRootPath)}({AnyParamAttributePattern}){WrapByEscapedBraces(2)}" }
+            { (ResponseExtName, 0), $@"{Regex.Escape(ResponseRootPath)}({AnyParamAttributePattern}){WrapByEscapedBraces(2)}" },
+            { (TypeExtName, 0), $@"{Regex.Escape(TypeRootPath)}" }
         };
 
         /// <summary>

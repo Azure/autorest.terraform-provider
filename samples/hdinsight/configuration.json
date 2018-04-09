@@ -1,6 +1,30 @@
 {
     "name": "HD Insight Clusters",
     "spec": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/hdinsight/resource-manager/Microsoft.HDInsight/preview/2015-03-01-preview/cluster.json",
+    "sdk": {
+        "rename": [{
+            "source": "{:t:}/SecurityProfile/ClusterUsersGroupDNs",
+            "name": "ClusterUsersGroupDNS"
+        }, {
+            "source": "{:t:}/HardwareProfile/VmSize",
+            "name": "VMSize"
+        }, {
+            "source": "{:t:}/LinuxOperatingSystemProfile/SshProfile",
+            "name": "SSHProfile"
+        }, {
+            "source": "{:t:}/SshProfile",
+            "name": "SSHProfile"
+        }, {
+            "source": "{:t:}/SshPublicKey",
+            "name": "SSHPublicKey"
+        }, {
+            "source": "{:t:}/VirtualNetworkProfile/Id",
+            "name": "ID"
+        }, {
+            "source": "{:t:}/ScriptAction/Uri",
+            "name": "URI"
+        }]
+    },
     "import": {
         "fmt": "fmt",
         "log": "log",

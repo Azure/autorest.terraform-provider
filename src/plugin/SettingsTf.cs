@@ -76,6 +76,9 @@ namespace AutoRest.Terraform
         [JsonProperty("name")]
         public string ResourceName { get; private set; }
 
+        [JsonProperty("sdk")]
+        public SDKTuningDefinition SDKTunings { get; private set; }
+
         [JsonProperty("import")]
         public IDictionary<string, string> ImportCandidates { get; private set; }
 
@@ -93,6 +96,12 @@ namespace AutoRest.Terraform
 
         [JsonProperty("delete")]
         public IEnumerable<MethodDefinition> DeleteMethods { get; private set; }
+
+        public sealed class SDKTuningDefinition
+        {
+            [JsonProperty("rename")]
+            public IEnumerable<RenameDefinition> Renames { get; private set; }
+        }
 
         public sealed class TypeDefinition
         {
@@ -143,6 +152,15 @@ namespace AutoRest.Terraform
 
             [JsonProperty("priority")]
             public Priority Priority { get; private set; }
+        }
+
+        public sealed class RenameDefinition
+        {
+            [JsonProperty("source")]
+            public string SourcePath { get; private set; }
+
+            [JsonProperty("name")]
+            public string TargetName { get; private set; }
         }
     }
 }
