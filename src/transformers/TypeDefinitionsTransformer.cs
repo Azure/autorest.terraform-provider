@@ -8,7 +8,7 @@ using static AutoRest.Terraform.TfProviderMetadata;
 namespace AutoRest.Terraform
 {
     /// <summary>
-    /// Set <see cref="CompositeTypeTf.OriginalMetadata"/> property according to the user definitions from <see cref="TypeDefinition"/>.
+    /// Set <see cref="CompositeTypeTf.OriginalMetadata"/> property according to the user definitions from <see cref="TypePackageDefinition"/>.
     /// </summary>
     internal class TypeDefinitionsTransformer
         : TfProviderTransformerBase
@@ -19,7 +19,7 @@ namespace AutoRest.Terraform
             ResolvePackage();
         }
 
-        private List<(Regex Pattern, TypeDefinition Definition)> Rules { get; } = new List<(Regex, TypeDefinition)>();
+        private List<(Regex Pattern, TypePackageDefinition Definition)> Rules { get; } = new List<(Regex, TypePackageDefinition)>();
 
         private void SetupRules()
         {

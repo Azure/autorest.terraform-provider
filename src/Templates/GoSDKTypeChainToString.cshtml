@@ -19,6 +19,7 @@
             { GoSDKTerminalTypes.Enum, ("string", "*string", null) },
             { GoSDKTerminalTypes.Int32, ("int32", "*int32", "Int32") },
             { GoSDKTerminalTypes.String, ("string", "*string", "String") },
+            { GoSDKTerminalTypes.Object, ("interface{}", "interface{}", "interface{}") }
         };
 
     private string StripPointer(string type) => type.TrimStart('*');

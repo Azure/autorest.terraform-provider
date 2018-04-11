@@ -33,6 +33,7 @@ namespace AutoRest.Terraform
         public string PropertyPath { get; }
         public TfProviderField BackingField { get; private set; }
         public GoSDKTypeChain GoType { get; }
+        public GoSDKTypeChain GenerateType => (OriginalVariable as PropertyTf)?.GenerateType;
         public IEnumerable<GoSDKTypedData> Properties => properties;
 
         public GoSDKTypedData Parent { get; private set; }

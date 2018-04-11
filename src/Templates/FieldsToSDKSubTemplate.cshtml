@@ -10,7 +10,7 @@
         => !string.IsNullOrEmpty(Model.Scope) ? (Model.Scope + "." + Model.Data.Name, "=") : (GetSDKFieldVarName(), ":=");
     private string GetNonTerminalBaseVariableName()
     {
-        var ntCount = Model.Type.Chain.Count() - 1;
+        var ntCount = Model.Data.GoType.Chain.Count() - Model.Type.Chain.Count();
         var postfix = (ntCount > 0 ? ntCount.ToString() : string.Empty);
         return CodeNamer.GetAzureRmPropPathLocalVarBaseName(Model.Data.BackingField) + postfix;
     }
@@ -26,6 +26,7 @@
     Debug.Assert(Model.Data != null && Model.Type != null);
 
     var isTopLevel = (Model.Scope == null);
+    var typeOverride = (ReferenceEquals(Model.Data.GoType, Model.Type) ? Model.Data.GenerateType : null);
     var (target, assignOp) = GetTargetAndOperation();
     if (!Model.Type.Chain.Any())
     {
@@ -36,7 +37,7 @@
         }
         else
         {
-@:@(Indentation)@(target) @(assignOp) @(isTopLevel ? string.Empty : "&")@(TypeToString(Model.Type, "sdk")){}
+@:@(Indentation)@(target) @(assignOp) @(isTopLevel ? string.Empty : "&")@(TypeToString(typeOverride ?? Model.Type, "sdk")){}
             foreach (var prop in Model.Data.Properties)
             {
 @:@(IncludeSelf(prop, prop.GoType, target))
@@ -55,7 +56,7 @@
         var itrVarName = "tmpParamItemOf" + baseVarName;
         var valVarName = "tmpParamValueOf" + baseVarName;
 
-@:@(Indentation)@(tempName) := make(@(TypeToString(Model.Type, "sdk"))@(isArray ? ", 0" : string.Empty))
+@:@(Indentation)@(tempName) := make(@(TypeToString(typeOverride ?? Model.Type, "sdk"))@(isArray ? ", 0" : string.Empty))
 @:@(IncludeLoadFields(Model.Data.BackingField, $"for {keyVarName}, {itrVarName} := range {{0}}")) {
 
         Indentation.Indent();

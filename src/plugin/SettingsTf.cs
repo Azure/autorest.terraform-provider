@@ -82,8 +82,8 @@ namespace AutoRest.Terraform
         [JsonProperty("import")]
         public IDictionary<string, string> ImportCandidates { get; private set; }
 
-        [JsonProperty("typedef")]
-        public IEnumerable<TypeDefinition> TypeDefinitions { get; private set; }
+        [JsonProperty("typepkg")]
+        public IEnumerable<TypePackageDefinition> TypeDefinitions { get; private set; }
 
         [JsonProperty("create")]
         public IEnumerable<MethodDefinition> CreateMethods { get; private set; }
@@ -100,10 +100,13 @@ namespace AutoRest.Terraform
         public sealed class SDKTuningDefinition
         {
             [JsonProperty("rename")]
-            public IEnumerable<RenameDefinition> Renames { get; private set; }
+            public IEnumerable<SDKRenameDefinition> Renames { get; private set; }
+
+            [JsonProperty("typedef")]
+            public IEnumerable<SDKTypeDefinition> TypeDefinitions { get; private set; }
         }
 
-        public sealed class TypeDefinition
+        public sealed class TypePackageDefinition
         {
             [JsonProperty("type")]
             public string Path { get; private set; }
@@ -154,13 +157,25 @@ namespace AutoRest.Terraform
             public Priority Priority { get; private set; }
         }
 
-        public sealed class RenameDefinition
+        public sealed class SDKRenameDefinition
         {
             [JsonProperty("source")]
             public string SourcePath { get; private set; }
 
             [JsonProperty("name")]
             public string TargetName { get; private set; }
+        }
+
+        public sealed class SDKTypeDefinition
+        {
+            [JsonProperty("field")]
+            public string FieldPath { get; private set; }
+
+            [JsonProperty("type")]
+            public string TargetType { get; private set; }
+
+            [JsonProperty("sdktype")]
+            public string GenerateType { get; private set; }
         }
     }
 }

@@ -50,6 +50,7 @@ namespace AutoRest.Terraform
             Context = new Context
             {
                 Context,
+                new Factory<Property, PropertyTf>(),
                 new Factory<EnumType, EnumTypeTf>(),
                 new Factory<CompositeType, CompositeTypeTf>(),
                 new Factory<CodeModel, CodeModelTf>()

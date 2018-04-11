@@ -23,6 +23,11 @@
         }, {
             "source": "{:t:}/ScriptAction/Uri",
             "name": "URI"
+        }],
+        "typedef": [{
+            "field": "{:t:}/ClusterDefinition/Configurations",
+            "type": "StringMap, StringMap, String",
+            "sdktype": "StringMap, Object"
         }]
     },
     "import": {
@@ -34,7 +39,7 @@
         "utils": "github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils",
         "hdinsight": "github.com/Azure/azure-sdk-for-go/services/hdinsight/mgmt/2015-03-01-preview/hdinsight"
     },
-    "typedef": [{
+    "typepkg": [{
         "type": "{:**:}",
         "package": "hdinsight"
     }],

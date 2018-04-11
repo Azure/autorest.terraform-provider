@@ -15,6 +15,13 @@
 @{
     Debug.Assert(Model.Field != null && Model.FieldDefs != null && Model.FieldDefs.Count > 0);
 
+    var existDefinition = Model.FieldDefs.FirstOrDefault(def => def.ContainsKey(Model.Field.PropertyPath));
+    if (existDefinition != null)
+    {
+@:@(Indentation)@(string.Format(Model.TargetFormat, existDefinition[Model.Field.PropertyPath]))
+        return;
+    }
+
     var definition = Model.FieldDefs.FirstOrDefault(def => def.ContainsKey(Model.Field.Parent.PropertyPath));
     if (!Model.Field.Parent.IsRoot && definition == null)
     {

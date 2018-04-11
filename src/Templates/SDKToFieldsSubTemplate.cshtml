@@ -6,9 +6,9 @@
 @inherits TfProviderTemplateBase<(GoSDKTypedData Data, GoSDKTypeChain Type, string Scope, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
     private string GetNewScope(string scope) => (scope + (Model.Data.GoType.Chain.Count() == 0 ? Model.Data.Name : string.Empty)).TrimEnd('.') + ".";
-    private string GetNonTerminalBaseVariableName()
+    private string GetNonTerminalBaseVariableName(GoSDKTypeChain targetChain = null)
     {
-        var ntCount = Model.Type.Chain.Count() - 1;
+        var ntCount = Model.Data.GoType.Chain.Count() - (targetChain?.Chain ?? Model.Type.Chain).Count();
         var postfix = (ntCount > 0 ? ntCount.ToString() : string.Empty);
         return CodeNamer.GetAzureRmPropPathLocalVarBaseName(Model.Data.BackingField) + postfix;
     }
@@ -23,8 +23,10 @@
 @{
     Debug.Assert(Model.Data != null && Model.Type != null && Model.Scope != null);
 
+    var isIntermediate = (Model.Type.Chain.Count() < Model.Data.GoType.Chain.Count());
+    var noFieldAccess = isIntermediate && Model.Type.Chain.Count() > 0;
     var noIndirection = (Model.Type.IsSimple && Model.Type.Terminal == GoSDKTerminalTypes.Enum);
-    var value = (noIndirection ? string.Empty : "*") + Model.Scope + Model.Data.Name;
+    var value = (noIndirection ? string.Empty : "*") + Model.Scope + (noFieldAccess ? $"(*{TypeToString(Model.Type, "sdk")})" : Model.Data.Name);
     if (!Model.Type.Chain.Any())
     {
         if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
@@ -58,7 +60,14 @@
         Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, valVarName);
         if (!valueType.IsSimple)
         {
+            if (!valueType.Chain.Any())
+            {
 @:@(Indentation)@(valVarName) := make(map[string]interface{})
+            }
+            else
+            {
+                valVarName = "tmpRespOf" + GetNonTerminalBaseVariableName(valueType);
+            }
 @:@(IncludeSelf(Model.Data, valueType, GetNewScope(itrVarName)))
         }
         else
@@ -80,7 +89,11 @@
         Indentation.Outdent();
 
 @:@(Indentation)}
+
+        if (!isIntermediate)
+        {
 @:@(IncludeStoreFields(Model.Data.BackingField, tempName))
+        }
 
     }
 }

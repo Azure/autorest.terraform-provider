@@ -8,7 +8,7 @@ namespace AutoRest.Terraform
 {
     public enum GoSDKTerminalTypes
     {
-        Boolean, Int32, String, Enum, Complex
+        Boolean, Int32, String, Enum, Object, Complex
     }
 
     public enum GoSDKNonTerminalTypes
@@ -24,8 +24,9 @@ namespace AutoRest.Terraform
             { KnownPrimaryType.Boolean, GoSDKTerminalTypes.Boolean },
             { KnownPrimaryType.Int, GoSDKTerminalTypes.Int32 },
             { KnownPrimaryType.String, GoSDKTerminalTypes.String },
-            { KnownPrimaryType.Object, GoSDKTerminalTypes.String }
+            { KnownPrimaryType.Object, GoSDKTerminalTypes.Object }
         };
+        private static readonly IDictionary<GoSDKTerminalTypes, KnownPrimaryType> PrimaryTypeReverseMapping = PrimaryTypeMapping.ToDictionary(pair => pair.Value, pair => pair.Key);
 
         public GoSDKTypeChain(IModelType type)
         {
@@ -75,8 +76,44 @@ namespace AutoRest.Terraform
             OriginalTerminalType = OriginalTerminalType
         };
 
+        public static GoSDKTypeChain Parse(string s)
+        {
+            var typeStrings = s.Split(',');
+            var terminal = (GoSDKTerminalTypes)Enum.Parse(typeof(GoSDKTerminalTypes), typeStrings.Last());
+            var nonTerminals = typeStrings.SkipLast(1).Select(nt => (GoSDKNonTerminalTypes)Enum.Parse(typeof(GoSDKNonTerminalTypes), nt));
+            return new GoSDKTypeChain(terminal, nonTerminals);
+        }
 
-        private List<GoSDKNonTerminalTypes> chain = new List<GoSDKNonTerminalTypes>();
+        public IModelType ToModelType()
+        {
+            IModelType lastType;
+            switch (Terminal)
+            {
+                case GoSDKTerminalTypes.Boolean:
+                case GoSDKTerminalTypes.Int32:
+                case GoSDKTerminalTypes.String:
+                    lastType = new PrimaryTypeSDKImpl(PrimaryTypeReverseMapping[Terminal]);
+                    break;
+                default:
+                    throw new NotSupportedException($"{Terminal} cannot be converted to {nameof(IModelType)}");
+            }
+            foreach (var nonTerminal in Chain)
+            {
+                switch (nonTerminal)
+                {
+                    case GoSDKNonTerminalTypes.Array:
+                        lastType = new SequenceTypeSDKImpl(lastType);
+                        break;
+                    case GoSDKNonTerminalTypes.StringMap:
+                        lastType = new DictionaryTypeSDKImpl(lastType);
+                        break;
+                }
+            }
+            return lastType;
+        }
+
+
+        private readonly List<GoSDKNonTerminalTypes> chain = new List<GoSDKNonTerminalTypes>();
 
 
         public override string ToString() => $"{string.Join(", ", Chain.Select(t => t.ToString()).Concat(Enumerable.Repeat(Terminal.ToString(), 1)))}";
@@ -105,6 +142,32 @@ namespace AutoRest.Terraform
             }
             return Terminal == other.Terminal &&
                 Enumerable.SequenceEqual(Chain, other.Chain);
+        }
+
+
+        private class PrimaryTypeSDKImpl
+            : PrimaryType
+        {
+            public PrimaryTypeSDKImpl(KnownPrimaryType primary)
+                : base(primary)
+            {
+            }
+        }
+
+        private class SequenceTypeSDKImpl
+            : SequenceType
+        {
+            public SequenceTypeSDKImpl(IModelType elementType)
+                : base()
+                => ElementType = elementType;
+        }
+
+        private class DictionaryTypeSDKImpl
+            : DictionaryType
+        {
+            public DictionaryTypeSDKImpl(IModelType valueType)
+                : base()
+                => ValueType = valueType;
         }
     }
 }
