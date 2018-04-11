@@ -1,9 +1,0 @@
-﻿@using AutoRest.Core
-@using AutoRest.Terraform
-@inherits TfProviderTemplateBase<UpdateGenerator>
-
-func @(Model.FunctionName)(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ArmClient).@Model.GoSDKClientName
-	ctx := meta.(*ArmClient).StopContext
-}
-@EmptyLine

@@ -11,18 +11,19 @@ namespace AutoRest.Terraform
 
     public class GoSDKInvocation
     {
-        public GoSDKInvocation(Method method, SchemaDefinition metadata, InvocationCategory category)
+        public GoSDKInvocation(MethodTf method, SchemaDefinition metadata, InvocationCategory category)
         {
             OriginalMethod = method;
             OriginalMetadata = metadata;
             Category = category;
         }
 
-        public Method OriginalMethod { get; }
+        public MethodTf OriginalMethod { get; }
         public SchemaDefinition OriginalMetadata { get; }
 
         public string MethodName => OriginalMethod.Name;
         public InvocationCategory Category { get; }
+        public bool IsAsync => OriginalMethod.IsLongRunning;
         public GoSDKTypedData ArgumentsRoot { get; } = new GoSDKTypedData();
         public GoSDKTypedData ResponsesRoot { get; } = new GoSDKTypedData();
     }

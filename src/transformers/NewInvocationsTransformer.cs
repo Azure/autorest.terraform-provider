@@ -26,7 +26,7 @@ namespace AutoRest.Terraform
             return from def in metadata
                    let pattern = def.Path.ToPropertyPathRegex()
                    from op in CodeModel.Operations
-                   from m in op.Methods
+                   from m in op.Methods.Cast<MethodTf>()
                    let path = JoinPathStrings(CodeModel.Name, op.Name, m.Name)
                    where pattern.IsMatch(path)
                    select new GoSDKInvocation(m, def.Schema, category);

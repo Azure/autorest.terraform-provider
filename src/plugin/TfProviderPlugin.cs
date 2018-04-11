@@ -53,6 +53,7 @@ namespace AutoRest.Terraform
                 new Factory<Property, PropertyTf>(),
                 new Factory<EnumType, EnumTypeTf>(),
                 new Factory<CompositeType, CompositeTypeTf>(),
+                new Factory<Method, MethodTf>(),
                 new Factory<CodeModel, CodeModelTf>()
             };
             Host = host;

@@ -1,4 +1,6 @@
 using AutoRest.Core.Model;
+using AutoRest.Core.Utilities;
+using AutoRest.Extensions.Azure;
 using System.Collections.Generic;
 using System.Linq;
 using static AutoRest.Terraform.TfProviderMetadata;
@@ -16,6 +18,12 @@ namespace AutoRest.Terraform
         internal List<GoSDKInvocation> ReadInvocations { get; } = new List<GoSDKInvocation>();
         internal List<GoSDKInvocation> UpdateInvocations { get; } = new List<GoSDKInvocation>();
         internal List<GoSDKInvocation> DeleteInvocations { get; } = new List<GoSDKInvocation>();
+    }
+
+    public class MethodTf
+        : Method
+    {
+        public bool IsLongRunning => Extensions.Get<bool>(AzureExtensions.LongRunningExtension) == true;
     }
 
     public class CompositeTypeTf

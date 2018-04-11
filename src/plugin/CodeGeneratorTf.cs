@@ -8,7 +8,7 @@ using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
-    internal interface ITfProviderGenerator
+    public interface ITfProviderGenerator
     {
         void Preprocess(CodeModelTf model);
         ITemplate CreateTemplate();

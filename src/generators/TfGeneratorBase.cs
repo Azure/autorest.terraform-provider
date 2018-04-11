@@ -5,12 +5,12 @@ using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
-    public abstract class TfGeneratorBase<TTemplate, TGenerator>
+    public abstract class TfGeneratorBase
         : ITfProviderGenerator
-        where TTemplate : TfProviderTemplateBase<TGenerator>, new()
-        where TGenerator : TfGeneratorBase<TTemplate, TGenerator>
     {
-        protected TfGeneratorBase() => Singleton<TGenerator>.Instance = (TGenerator)this;
+        protected TfGeneratorBase()
+        {
+        }
 
         protected SettingsTf Settings => Singleton<SettingsTf>.Instance;
         protected CodeNamerTf CodeNamer => Singleton<CodeNamerTf>.Instance;
@@ -19,11 +19,14 @@ namespace AutoRest.Terraform
         public string ResourceName => Settings.Metadata.ResourceName;
         public string AzureRmResourceName => CodeNamer.GetAzureRmResourceName(ResourceName);
 
-        public ITemplate CreateTemplate() => new TTemplate
+        protected abstract ITemplate CreateTemplateCore();
+
+        public ITemplate CreateTemplate()
         {
-            Model = (TGenerator)this,
-            Settings = Settings.StandardSettings
-        };
+            var template = CreateTemplateCore();
+            template.Settings = Settings.StandardSettings;
+            return template;
+        }
 
         public void Preprocess(CodeModelTf model)
         {
@@ -31,10 +34,8 @@ namespace AutoRest.Terraform
         }
     }
 
-    public abstract class TfFunctionGeneratorBase<TTemplate, TGenerator>
-        : TfGeneratorBase<TTemplate, TGenerator>
-        where TTemplate : TfProviderTemplateBase<TGenerator>, new()
-        where TGenerator : TfGeneratorBase<TTemplate, TGenerator>
+    public abstract class TfFunctionGeneratorBase
+        : TfGeneratorBase
     {
         public string GoSDKClientName => CodeNamer.GetAzureGoSDKClientName(ResourceName);
         public string FunctionName => CodeNamer.GetGoPrivateMethodName(CodeNamer.JoinNonEmpty(AzureRmResourceName, FunctionNamePostfix));

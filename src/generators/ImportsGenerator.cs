@@ -1,12 +1,17 @@
-﻿using AutoRest.Terraform.Templates;
+﻿using AutoRest.Core;
+using AutoRest.Terraform.Templates;
 using System.Collections.Generic;
 using System.Linq;
+using static AutoRest.Core.Utilities.DependencyInjection;
 
 namespace AutoRest.Terraform
 {
     public class ImportsGenerator
-        : TfGeneratorBase<ImportsTemplate, ImportsGenerator>
+        : TfGeneratorBase
     {
+        public ImportsGenerator() => Singleton<ImportsGenerator>.Instance = this;
+        protected override ITemplate CreateTemplateCore() => new ImportsTemplate { Model = this };
+
         public string PackageName => Settings.StandardSettings.Namespace;
         public IEnumerable<string> SystemReferences
             => from r in references
