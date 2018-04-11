@@ -21,26 +21,40 @@ func @(Model.FunctionName)(d *@(ReferencePackage("schema")).ResourceData, meta i
 @:@(Include<FieldsToSDKSubTemplate, (GoSDKTypedData, GoSDKTypeChain, string, Stack<IDictionary<string, string>>)>((arg, arg.GoType, null, fieldDefs)))
         }
 
+        var resultVarName = (invocation.IsAsync ? "future" : (invocation.SkipResult ? "_" : "response"));
+
 @EmptyLine
-@:@(Indentation)// IsAsync = @(invocation.IsAsync)
-@:@(Indentation)future, err := client.@(invocation.OriginalMethod.Name)(ctx, @(string.Join(", ", invocation.ArgumentsRoot.Children.Select(arg => arg.Name))))
+@:@(Indentation)@(resultVarName), err := client.@(invocation.OriginalMethod.Name)(ctx, @(string.Join(", ", invocation.ArgumentsRoot.Children.Select(arg => arg.Name))))
 @:@(Indentation)if err != nil {
         Indentation.Indent();
-@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("@(Model.ResourceName) @(invocation.Category.ToString().ToLowerInvariant()) error: %+v", err)
         Indentation.Outdent();
 @:@(Indentation)}
+
+        if (invocation.IsAsync)
+        {
+
 @:@(Indentation)err = future.WaitForCompletion(ctx, client.Client)
 @:@(Indentation)if err != nil {
         Indentation.Indent();
-@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("@(Model.ResourceName) @(invocation.Category.ToString().ToLowerInvariant()) future wait for completion error: %+v", err)
         Indentation.Outdent();
 @:@(Indentation)}
+
+            if (!invocation.SkipResult)
+            {
+
 @:@(Indentation)response, err := future.Result(client)
 @:@(Indentation)if err != nil {
         Indentation.Indent();
-@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("Error creating @(Model.ResourceName): %+v", err)
+@:@(Indentation)return @(ReferencePackage("fmt")).Errorf("@(Model.ResourceName) @(invocation.Category.ToString().ToLowerInvariant()) future result error: %+v", err)
         Indentation.Outdent();
 @:@(Indentation)}
+
+            }
+
+        }
+
 @EmptyLine
 
         fieldDefs.Clear();

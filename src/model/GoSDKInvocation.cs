@@ -1,5 +1,4 @@
-﻿using AutoRest.Core.Model;
-using System.Collections.Generic;
+﻿using System.Linq;
 using static AutoRest.Terraform.TfProviderMetadata;
 
 namespace AutoRest.Terraform
@@ -26,5 +25,7 @@ namespace AutoRest.Terraform
         public bool IsAsync => OriginalMethod.IsLongRunning;
         public GoSDKTypedData ArgumentsRoot { get; } = new GoSDKTypedData();
         public GoSDKTypedData ResponsesRoot { get; } = new GoSDKTypedData();
+
+        public bool SkipResult => !ResponsesRoot.Traverse(TraverseType.PreOrder).Any();
     }
 }
