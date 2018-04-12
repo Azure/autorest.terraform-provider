@@ -21,6 +21,8 @@ namespace AutoRest.Terraform
         public static readonly string AnyPathExtension = AnyPathExtName.ToExtensionString();
 
 
+        public static string EscapeFormatString(this string format) => format.Replace("{", "{{").Replace("}", "}}");
+
         private static string ToAttributeString(this object obj) => AttributeStart + obj + AttributeEnd;
         private static string ToExtensionString(this string extension) => ExtensionStart + extension + ExtensionEnd;
         private static string WrapByFormatBraces(this object content) => $"{{{content}}}";

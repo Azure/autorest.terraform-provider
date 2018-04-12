@@ -27,6 +27,14 @@
     var noFieldAccess = isIntermediate && Model.Type.Chain.Count() > 0;
     var noIndirection = (Model.Type.IsSimple && Model.Type.Terminal == GoSDKTerminalTypes.Enum);
     var value = (noIndirection ? string.Empty : "*") + Model.Scope + (noFieldAccess ? $"(*{TypeToString(Model.Type, "sdk")})" : Model.Data.Name);
+    var mightBeEmpty = !Model.Data.OriginalVariable.IsRequired && !noIndirection && !isIntermediate;
+    var isArray = Model.Type.Chain.Any() && Model.Type.Chain.First() == GoSDKNonTerminalTypes.Array;
+    if (mightBeEmpty)
+    {
+@:@(Indentation)if @(value.Substring(1)) != nil @(isArray ? $"&& len({value}) > 0 " : string.Empty){
+        Indentation.Indent();
+    }
+
     if (!Model.Type.Chain.Any())
     {
         if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
@@ -45,7 +53,6 @@
     {
         var valueType = Model.Type.StripNonTerminal();
         var baseVarName = GetNonTerminalBaseVariableName();
-        var isArray = Model.Type.Chain.First() == GoSDKNonTerminalTypes.Array;
 
         var tempName = "tmpRespOf" + baseVarName;
         var keyVarName = (isArray ? "_" : "tmpRespKeyOf" + baseVarName);
@@ -95,5 +102,11 @@
 @:@(IncludeStoreFields(Model.Data.BackingField, tempName))
         }
 
+    }
+
+    if (mightBeEmpty)
+    {
+        Indentation.Outdent();
+@:@(Indentation)}
     }
 }

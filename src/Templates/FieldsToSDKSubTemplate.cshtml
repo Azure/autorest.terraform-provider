@@ -62,8 +62,9 @@
         var itrVarName = "tmpParamItemOf" + baseVarName;
         var valVarName = "tmpParamValueOf" + baseVarName;
 
-@:@(Indentation)@(tempName) := make(@(TypeToString(typeOverride ?? Model.Type, "sdk"))@(isArray ? ", 0" : string.Empty))
-@:@(IncludeLoadFields(Model.Data.BackingField, $"for {keyVarName}, {itrVarName} := range {{0}}")) {
+@:@(IncludeLoadFields(Model.Data.BackingField,
+    $"{tempName} := make({TypeToString(typeOverride ?? Model.Type, "sdk")}{(isArray ? ", 0" : string.Empty)})\r\n".EscapeFormatString() +
+    $"for {keyVarName}, {itrVarName} := range {{0}}")) {
 
         Indentation.Indent();
         Model.FieldDefs.Push(new Dictionary<string, string>());

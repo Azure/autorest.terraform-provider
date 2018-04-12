@@ -1,4 +1,5 @@
 using AutoRest.Core;
+using AutoRest.Core.Utilities;
 using System;
 using System.Linq;
 using static AutoRest.Core.Utilities.DependencyInjection;
@@ -16,6 +17,8 @@ namespace AutoRest.Terraform
         public void Outdent() => IndentationLevel = Math.Max(IndentationLevel - 1, 0);
 
         public override string ToString() => string.Join(string.Empty, Enumerable.Repeat(IndentationWord, IndentationLevel));
+
+        public string ApplyToMultiline(string lines) => IndentedStringBuilder.IndentMultilineString(ToString() + lines, ToString());
     }
 
     public class TfProviderTemplateBase<T>

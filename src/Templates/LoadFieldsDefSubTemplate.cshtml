@@ -18,7 +18,7 @@
     var existDefinition = Model.FieldDefs.FirstOrDefault(def => def.ContainsKey(Model.Field.PropertyPath));
     if (existDefinition != null)
     {
-@:@(Indentation)@(string.Format(Model.TargetFormat, existDefinition[Model.Field.PropertyPath]))
+@:@(Indentation.ApplyToMultiline(string.Format(Model.TargetFormat, existDefinition[Model.Field.PropertyPath])))
         return;
     }
 
@@ -42,21 +42,21 @@
         var getStatement = $"d.Get(\"{Model.Field.Name}\")";
         if (Model.Field.MightBeEmpty)
         {
-@:@(Indentation)if v, paramExists := d.GetOk("@(Model.Field.Name)"); paramExists {
+@:@(Indentation)if paramValue, paramExists := d.GetOk("@(Model.Field.Name)"); paramExists {
             Indentation.Indent();
-            getStatement = "v";
+            getStatement = "paramValue";
         }
-@:@(Indentation)@(string.Format(actualTargetFormat, $"{getStatement}.({TypeToString(Model.Field.GoType, "tf")})"))
+@:@(Indentation.ApplyToMultiline(string.Format(actualTargetFormat, $"{getStatement}.({TypeToString(Model.Field.GoType, "tf")})")))
     }
     else
     {
         var getStatement = $"{definition[Model.Field.Parent.PropertyPath]}[\"{Model.Field.Name}\"]";
         if (Model.Field.MightBeEmpty)
         {
-@:@(Indentation)if v, paramExists := @(getStatement); paramExists {
+@:@(Indentation)if paramValue, paramExists := @(getStatement); paramExists {
             Indentation.Indent();
-            getStatement = "v";
+            getStatement = "paramValue";
         }
-@:@(Indentation)@(string.Format(actualTargetFormat, $"{getStatement}.({TypeToString(Model.Field.GoType, "tf")})"))
+@:@(Indentation.ApplyToMultiline(string.Format(actualTargetFormat, $"{getStatement}.({TypeToString(Model.Field.GoType, "tf")})")))
     }
 }
