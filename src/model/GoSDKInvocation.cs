@@ -10,7 +10,7 @@ namespace AutoRest.Terraform
 
     public class GoSDKInvocation
     {
-        public GoSDKInvocation(MethodTf method, SchemaDefinition metadata, InvocationCategory category)
+        public GoSDKInvocation(MethodTf method, MethodDefinition metadata, InvocationCategory category)
         {
             OriginalMethod = method;
             OriginalMetadata = metadata;
@@ -18,14 +18,15 @@ namespace AutoRest.Terraform
         }
 
         public MethodTf OriginalMethod { get; }
-        public SchemaDefinition OriginalMetadata { get; }
+        public MethodDefinition OriginalMetadata { get; }
 
         public string MethodName => OriginalMethod.Name;
         public InvocationCategory Category { get; }
         public bool IsAsync => OriginalMethod.IsLongRunning;
+        public bool ShouldSetId => OriginalMetadata.ShouldSetId;
         public GoSDKTypedData ArgumentsRoot { get; } = new GoSDKTypedData();
         public GoSDKTypedData ResponsesRoot { get; } = new GoSDKTypedData();
 
-        public bool SkipResult => !ResponsesRoot.Traverse(TraverseType.PreOrder).Any();
+        public bool SkipResult => !ShouldSetId && !ResponsesRoot.Traverse(TraverseType.PreOrder).Any();
     }
 }

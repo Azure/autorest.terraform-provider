@@ -29,7 +29,7 @@ namespace AutoRest.Terraform
                    from m in op.Methods.Cast<MethodTf>()
                    let path = JoinPathStrings(CodeModel.Name, op.Name, m.Name)
                    where pattern.IsMatch(path)
-                   select new GoSDKInvocation(m, def.Schema, category);
+                   select new GoSDKInvocation(m, def, category);
         }
     }
 }

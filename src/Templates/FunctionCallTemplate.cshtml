@@ -52,10 +52,15 @@ func @(Model.FunctionName)(d *@(ReferencePackage("schema")).ResourceData, meta i
 @:@(Indentation)}
 
             }
-
         }
 
 @EmptyLine
+
+        if (invocation.ShouldSetId)
+        {
+@:@(Indentation)d.SetId(*response.ID)
+@EmptyLine
+        }
 
         fieldDefs.Clear();
         fieldDefs.Push(new Dictionary<string, string>());

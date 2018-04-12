@@ -24,7 +24,7 @@ namespace AutoRest.Terraform
         private void FilterCloneParametersAndResponses(IEnumerable<GoSDKInvocation> invocations)
         {
             var argsData = from invn in invocations
-                           let ex = invn.OriginalMetadata.Excludes.Select(Utilities.ToPropertyPathRegex)
+                           let ex = invn.OriginalMetadata.Schema.Excludes.Select(Utilities.ToPropertyPathRegex)
                            let pdata = from p in invn.OriginalMethod.LogicalParameters
                                        let path = p.ToPathString()
                                        where ex.All(x => !x.IsMatch(path))

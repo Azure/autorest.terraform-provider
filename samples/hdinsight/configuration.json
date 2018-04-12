@@ -48,6 +48,9 @@
         "schema": {
             "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag"],
             "flatten": [{
+                "source": "{:p:}/clusterName",
+                "target": "/name"
+            }, {
                 "source": "{:**:}",
                 "target": "/",
                 "priority": "Lowest"
@@ -56,13 +59,17 @@
                 "type": "{:**:}",
                 "package": "hdinsight"
             }]
-        }
+        },
+        "setId": true
     }],
     "read": [{
         "method": "HDInsightManagementClient/Clusters/Get",
         "schema": {
             "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag"],
             "flatten": [{
+                "source": "{:p:}/clusterName",
+                "target": "/name"
+            }, {
                 "source": "{:**:}",
                 "target": "/",
                 "priority": "Lowest"
@@ -74,6 +81,9 @@
         "schema": {
             "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag"],
             "flatten": [{
+                "source": "{:p:}/clusterName",
+                "target": "/name"
+            }, {
                 "source": "{:**:}",
                 "target": "/",
                 "priority": "Lowest"
@@ -85,6 +95,9 @@
         "schema": {
             "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
             "flatten": [{
+                "source": "{:p:}/clusterName",
+                "target": "/name"
+            }, {
                 "source": "{:**:}",
                 "target": "/",
                 "priority": "Lowest"

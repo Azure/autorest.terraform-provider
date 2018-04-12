@@ -120,6 +120,9 @@ namespace AutoRest.Terraform
             [JsonProperty("method")]
             public string Path { get; private set; }
 
+            [JsonProperty("setId")]
+            public bool ShouldSetId { get; private set; }
+
             [JsonProperty("schema")]
             public SchemaDefinition Schema { get; private set; }
         }
