@@ -39,7 +39,8 @@ namespace AutoRest.Terraform
 
         private static void AppendDisplayString(this Parameter parameter, IndentedStringBuilder builder)
         {
-            builder.AppendLine($"{parameter.Location} {parameter.Qualifier} \"{parameter.GetClientName()}\"; Type: {parameter.ModelType.ToSummaryString()}");
+            builder.AppendLine($"{parameter.Location} {parameter.Qualifier} \"{parameter.GetClientName()}\"; " +
+                $"Type: {parameter.ModelType.ToSummaryString()}; {(parameter.IsRequired ? "Required" : "Optional")}");
             builder.Indent();
             parameter.ModelType.AppendDisplayString(builder);
             builder.Outdent();
@@ -64,7 +65,8 @@ namespace AutoRest.Terraform
 
         private static void AppendDisplayString(this Property property, IndentedStringBuilder builder, bool isComposed = false)
         {
-            builder.AppendLine($"{(isComposed ? "Composed " : string.Empty)}{property.Qualifier} \"{property.GetClientName()}\"; Type: {property.ModelType.ToSummaryString()}");
+            builder.AppendLine($"{(isComposed ? "Composed " : string.Empty)}{property.Qualifier} \"{property.GetClientName()}\"; " +
+                $"Type: {property.ModelType.ToSummaryString()}; {(property.IsRequired ? "Required" : "Optional")}");
             builder.Indent();
             property.ModelType.AppendDisplayString(builder);
             builder.Outdent();

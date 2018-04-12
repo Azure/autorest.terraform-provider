@@ -39,10 +39,24 @@
 
     if (Model.Field.Parent.IsRoot)
     {
-@:@(Indentation)@(string.Format(actualTargetFormat, $"d.Get(\"{Model.Field.Name}\").({TypeToString(Model.Field.GoType, "tf")})"))
+        var getStatement = $"d.Get(\"{Model.Field.Name}\")";
+        if (Model.Field.MightBeEmpty)
+        {
+@:@(Indentation)if v, paramExists := d.GetOk("@(Model.Field.Name)"); paramExists {
+            Indentation.Indent();
+            getStatement = "v";
+        }
+@:@(Indentation)@(string.Format(actualTargetFormat, $"{getStatement}.({TypeToString(Model.Field.GoType, "tf")})"))
     }
     else
     {
-@:@(Indentation)@(string.Format(actualTargetFormat, $"{definition[Model.Field.Parent.PropertyPath]}[\"{Model.Field.Name}\"].({TypeToString(Model.Field.GoType, "tf")})"))
+        var getStatement = $"{definition[Model.Field.Parent.PropertyPath]}[\"{Model.Field.Name}\"]";
+        if (Model.Field.MightBeEmpty)
+        {
+@:@(Indentation)if v, paramExists := @(getStatement); paramExists {
+            Indentation.Indent();
+            getStatement = "v";
+        }
+@:@(Indentation)@(string.Format(actualTargetFormat, $"{getStatement}.({TypeToString(Model.Field.GoType, "tf")})"))
     }
 }

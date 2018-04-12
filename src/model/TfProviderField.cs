@@ -36,6 +36,8 @@ namespace AutoRest.Terraform
                                                          select f;
         public bool IsRoot => Parent == null;
         public bool IsRequired => OriginalVariable?.IsRequired ?? SubFields.Any(sf => sf.IsRequired);
+        public string DefaultValue => OriginalVariable.DefaultValue;
+        public bool MightBeEmpty => !IsRequired && string.IsNullOrEmpty(DefaultValue);
 
         public TfProviderField Parent { get; }
         public IEnumerable<TfProviderField> Children => SubFields;

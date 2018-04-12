@@ -26,6 +26,7 @@
     Debug.Assert(Model.Data != null && Model.Type != null);
 
     var isTopLevel = (Model.Scope == null);
+    var isIntermediate = (Model.Type.Chain.Count() < Model.Data.GoType.Chain.Count());
     var typeOverride = (ReferenceEquals(Model.Data.GoType, Model.Type) ? Model.Data.GenerateType : null);
     var (target, assignOp) = GetTargetAndOperation();
     if (!Model.Type.Chain.Any())
@@ -34,6 +35,11 @@
         {
             var formatString = (isTopLevel ? "{0}" : $"{TypeToString(Model.Type, "sdk-convert")}({{0}})");
 @:@(IncludeLoadFields(Model.Data.BackingField, $"{target} {assignOp} {formatString}"))
+            if (Model.Data.BackingField.MightBeEmpty)
+            {
+                Indentation.Outdent();
+@:@(Indentation)}
+            }
         }
         else
         {
@@ -87,6 +93,12 @@
 
 @:@(Indentation)}
 @:@(Indentation)@(target) @(assignOp) &@(tempName)
+
+        if (!isIntermediate && Model.Data.BackingField.MightBeEmpty)
+        {
+            Indentation.Outdent();
+@:@(Indentation)}
+        }
 
     }
 }
