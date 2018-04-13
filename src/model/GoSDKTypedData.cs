@@ -40,7 +40,7 @@ namespace AutoRest.Terraform
         public IEnumerable<GoSDKTypedData> Children => Properties;
 
 
-        private GoSDKInvocation Invocation { get; }
+        public GoSDKInvocation Invocation { get; }
 
         public void AddProperties(IEnumerable<GoSDKTypedData> props)
         {

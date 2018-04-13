@@ -54,10 +54,6 @@
                 "source": "{:**:}",
                 "target": "/",
                 "priority": "Lowest"
-            }],
-            "import": [{
-                "type": "{:**:}",
-                "package": "hdinsight"
             }]
         },
         "setId": true

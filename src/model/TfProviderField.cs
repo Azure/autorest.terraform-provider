@@ -36,6 +36,9 @@ namespace AutoRest.Terraform
                                                          select f;
         public bool IsRoot => Parent == null;
         public bool IsRequired => OriginalVariable?.IsRequired ?? SubFields.Any(sf => sf.IsRequired);
+        public bool IsReadOnly => updatedBy.Count > 0 && usedBy.Count == 0;
+        public bool IsCreateOnly => usedBy.Any(d => d.Invocation.Category == InvocationCategory.Creation) &&
+                                    usedBy.All(d => d.Invocation.Category != InvocationCategory.Update);
         public string DefaultValue => OriginalVariable.DefaultValue;
         public bool MightBeEmpty => !IsRequired && string.IsNullOrEmpty(DefaultValue);
 

@@ -47,6 +47,14 @@
 
         Indentation.Indent();
 @:@(Indentation)@(subField.IsRequired ? "Required" : "Optional"): true,
+        if (subField.IsReadOnly)
+        {
+@:@(Indentation)Computed: true,
+        }
+        if (subField.IsCreateOnly)
+        {
+@:@(Indentation)ForceNew: true,
+        }
         Indentation.Outdent();
 
         var goType = subField.GoType;
