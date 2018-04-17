@@ -42,6 +42,14 @@ The `clean` task clears all intermediate files as well as all the binary files.
 $ npm run clean
 ```
 
+### Package
+
+The `package` task generates a ready-to-publish *.tgz file which includes all the binaries. This task also forces to rebuild the whole project using `Release` configuration.
+
+```shell
+$ npm run package
+```
+
 ## Working with IDE
 
 ### Visual Studio

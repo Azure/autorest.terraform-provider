@@ -1,6 +1,7 @@
 const path = require('path');
 
 const gulp = require('gulp');
+const clean = require('gulp-clean');
 const { 
     clean: dotnet_clean,
     build: dotnet_build
@@ -9,7 +10,9 @@ const shrun = require('gulp-run');
 
 gulp.task('clean', () => {
     return gulp.src('*.sln', { read: false })
-        .pipe(dotnet_clean());
+        .pipe(dotnet_clean())
+        .pipe(gulp.src(['*.tgz', '*.tar']))
+        .pipe(clean({ force: true }));
 });
 
 gulp.task('build:debug', () => {
@@ -20,6 +23,11 @@ gulp.task('build:debug', () => {
 gulp.task('build', ['clean'], () => {
     return gulp.src('*.sln', { read: false })
         .pipe(dotnet_build({ configuration: 'Release' }));
+});
+
+gulp.task('publish', ['build'], () => {
+    return gulp.src('.', { read: false })
+        .pipe(shrun('npm pack'));
 });
 
 

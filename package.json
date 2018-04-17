@@ -7,7 +7,8 @@
     "clean": "gulp clean",
     "build": "gulp build",
     "build:debug": "gulp build:debug",
-    "samples:hdinsight": "gulp run:hdinsight"
+    "samples:hdinsight": "gulp run:hdinsight",
+    "package": "gulp publish"
   },
   "repository": {
     "type": "git",
@@ -25,11 +26,15 @@
     "url": "https://github.com/Azure/autorest.terraform-provider/issues"
   },
   "homepage": "https://github.com/Azure/autorest.terraform-provider#readme",
+  "files": [
+    "bin/"
+  ],
   "devDependencies": {
     "@microsoft.azure/autorest.modeler": "^2.3.47",
     "autorest": "^2.0.4245",
     "dotnet-sdk-2.0.0": "^1.4.4",
     "gulp": "^3.9.1",
+    "gulp-clean": "^0.4.0",
     "gulp-cli": "^2.0.1",
     "gulp-dotnet-cli": "^1.1.0",
     "gulp-run": "^1.7.1"

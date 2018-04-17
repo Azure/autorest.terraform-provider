@@ -30,7 +30,7 @@ namespace AutoRest.Terraform
         protected new TemplateIndentation Indentation { get; set; }
         protected CodeNamerTf CodeNamer => Singleton<CodeNamerTf>.Instance;
 
-        private protected V OtherModel<V>()
+        protected V OtherModel<V>()
             where V : ITfProviderGenerator
             => Singleton<V>.Instance;
 
