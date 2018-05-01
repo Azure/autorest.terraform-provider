@@ -46,10 +46,13 @@
 @:@(Indentation)"@subField.Name": {
 
         Indentation.Indent();
-@:@(Indentation)@(subField.IsRequired ? "Required" : "Optional"): true,
         if (subField.IsReadOnly)
         {
 @:@(Indentation)Computed: true,
+        }
+        else
+        {
+@:@(Indentation)@(subField.IsRequired ? "Required" : "Optional"): true,
         }
         if (subField.IsCreateOnly)
         {

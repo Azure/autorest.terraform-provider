@@ -22,7 +22,7 @@ namespace AutoRest.Terraform
         }
 
         private Stack<(Regex Pattern, TfProviderField ScopedField)> ScopeRules { get; } = new Stack<(Regex, TfProviderField)>();
-        private SortedList<uint, (Regex Pattern, TfProviderField Target, string NewName)> FlattenRules { get; } = new SortedList<uint, (Regex, TfProviderField, string)>();
+        private IList<(Regex Pattern, TfProviderField Target, string NewName)> FlattenRules { get; } = new List<(Regex, TfProviderField, string)>();
 
         private void FlattenFields(GoSDKInvocation invocation)
         {
@@ -30,18 +30,18 @@ namespace AutoRest.Terraform
             ScopeRules.Push((AnyPathExtension.ToPropertyPathRegex(), CodeModel.RootField));
             FlattenRules.Clear();
             var rulesDefinitions = from r in invocation.OriginalMetadata.Schema.Flattens
+                                   orderby r.Priority descending
                                    let p = r.SourcePath.ToPropertyPathRegex()
                                    let path = r.TargetPath.SplitPathStrings()
                                    let isFolder = r.TargetPath.EndsWith(ModelPathSeparator)
                                    let f = CodeModel.RootField.LocateOrAdd(isFolder ? path : path.SkipLast(1))
                                    select new
                                    {
-                                       Priority = (uint)r.Priority,
                                        Pattern = p,
                                        RootField = f,
                                        NewName = isFolder ? null : path.Last()
                                    };
-            rulesDefinitions.ForEach(rd => FlattenRules.Add(rd.Priority, (rd.Pattern, rd.RootField, rd.NewName)));
+            rulesDefinitions.ForEach(rd => FlattenRules.Add((rd.Pattern, rd.RootField, rd.NewName)));
             FlattenTree(invocation.ArgumentsRoot, false);
             FlattenTree(invocation.ResponsesRoot, true);
         }
@@ -51,12 +51,8 @@ namespace AutoRest.Terraform
             foreach (var node in root.Traverse(TraverseType.PreOrder))
             {
                 var (target, name) = (from r in FlattenRules
-                                      where r.Value.Pattern.IsMatch(node.PropertyPath)
-                                      select (r.Value.Target, r.Value.NewName)).FirstOrDefault();
-                if (target == null)
-                {
-                    target = CodeModel.RootField.LocateOrAdd(node.PropertyPath.SplitPathStrings().SkipLast(1));
-                }
+                                      where r.Pattern.IsMatch(node.PropertyPath)
+                                      select (r.Target, r.NewName)).First();
 
                 var scopedTarget = (from r in ScopeRules
                                     where r.Pattern.IsMatch(node.PropertyPath)

@@ -35,11 +35,6 @@
         {
             var formatString = (isTopLevel ? "{0}" : $"{TypeToString(Model.Type, "sdk-convert")}({{0}})");
 @:@(IncludeLoadFields(Model.Data.BackingField, $"{target} {assignOp} {formatString}"))
-            if (Model.Data.BackingField.MightBeEmpty)
-            {
-                Indentation.Outdent();
-@:@(Indentation)}
-            }
         }
         else
         {
@@ -48,6 +43,11 @@
             {
 @:@(IncludeSelf(prop, prop.GoType, target))
             }
+        }
+        if (!isIntermediate && Model.Data.BackingField != null && Model.Data.BackingField.MightBeEmpty)
+        {
+            Indentation.Outdent();
+@:@(Indentation)}
         }
     }
     else

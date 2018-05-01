@@ -69,7 +69,7 @@ namespace AutoRest.Terraform
         public IEnumerable<GoSDKNonTerminalTypes> Chain => chain;
         public GoSDKTerminalTypes Terminal { get; }
         public IModelType OriginalTerminalType { get; private set; }
-        public bool IsSimple => Chain.Count() == 0 && Terminal != GoSDKTerminalTypes.Complex;
+        public bool IsSimple => !Chain.Any() && Terminal != GoSDKTerminalTypes.Complex;
 
         public GoSDKTypeChain StripNonTerminal() => new GoSDKTypeChain(Terminal, Chain.Skip(1))
         {

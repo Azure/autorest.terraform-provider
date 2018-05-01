@@ -1,3 +1,4 @@
+using AutoRest.Core.Utilities;
 using System.Linq;
 
 namespace AutoRest.Terraform

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using static AutoRest.Core.Utilities.DependencyInjection;
@@ -139,13 +140,13 @@ namespace AutoRest.Terraform
         public enum Priority
             : uint
         {
-            Lowest = 6,
-            Lower = 5,
-            Low = 4,
+            Lowest = 0,
+            Lower = 1,
+            Low = 2,
             Normal = 3,
-            High = 2,
-            Higher = 1,
-            Highest = 0
+            High = 4,
+            Higher = 5,
+            Highest = 6
         }
 
         public sealed class FlattenDefinition
@@ -156,7 +157,8 @@ namespace AutoRest.Terraform
             [JsonProperty("target")]
             public string TargetPath { get; private set; }
 
-            [JsonProperty("priority")]
+            [JsonProperty("priority", DefaultValueHandling = DefaultValueHandling.Populate)]
+            [DefaultValue(Priority.Normal)]
             public Priority Priority { get; private set; }
         }
 

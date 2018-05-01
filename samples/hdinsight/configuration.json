@@ -46,10 +46,58 @@
     "create": [{
         "method": "HDInsightManagementClient/Clusters/Create",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag"],
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag", "{:r:}/Type"],
             "flatten": [{
                 "source": "{:p:}/clusterName",
                 "target": "/name"
+            }, {
+                "source": "{:p:}/parameters/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile",
+                "target": "/roles/linux_os_profile"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile",
+                "target": "/roles/linux_os_profile"
+            }, {
+                "source": "{:p:}/parameters/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys",
+                "target": "/roles/linux_os_profile/ssh_keys"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys",
+                "target": "/roles/linux_os_profile/ssh_keys"
+            }, {
+                "source": "{:p:}/parameters/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys/CertificateData",
+                "target": "/roles/linux_os_profile/ssh_keys/key_data"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys/CertificateData",
+                "target": "/roles/linux_os_profile/ssh_keys/key_data"
+            }, {
+                "source": "{:p:}/parameters/Properties/ComputeProfile/Roles/VirtualNetworkProfile",
+                "target": "/roles/vnet_profile"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/VirtualNetworkProfile",
+                "target": "/roles/vnet_profile"
+            }, {
+                "source": "{:p:}/parameters/Properties/SecurityProfile/{:**:}",
+                "target": "/security_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/SecurityProfile/{:**:}",
+                "target": "/security_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:p:}/parameters/Properties/ComputeProfile/Roles/OsProfile/{:**:}",
+                "target": "/roles/linux_os_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/{:**:}",
+                "target": "/roles/linux_os_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:p:}/parameters/Properties/ComputeProfile/Roles/VirtualNetworkProfile/{:**:}",
+                "target": "/roles/vnet_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/VirtualNetworkProfile/{:**:}",
+                "target": "/roles/vnet_profile/",
+                "priority": "Lower"
             }, {
                 "source": "{:**:}",
                 "target": "/",
@@ -61,10 +109,34 @@
     "read": [{
         "method": "HDInsightManagementClient/Clusters/Get",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag"],
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag", "{:r:}/Type"],
             "flatten": [{
                 "source": "{:p:}/clusterName",
                 "target": "/name"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile",
+                "target": "/roles/linux_os_profile"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys",
+                "target": "/roles/linux_os_profile/ssh_keys"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys/CertificateData",
+                "target": "/roles/linux_os_profile/ssh_keys/key_data"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/VirtualNetworkProfile",
+                "target": "/roles/vnet_profile"
+            }, {
+                "source": "{:r:}/Properties/SecurityProfile/{:**:}",
+                "target": "/security_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/{:**:}",
+                "target": "/roles/linux_os_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/VirtualNetworkProfile/{:**:}",
+                "target": "/roles/vnet_profile/",
+                "priority": "Lower"
             }, {
                 "source": "{:**:}",
                 "target": "/",
@@ -75,10 +147,34 @@
     "update": [{
         "method": "HDInsightManagementClient/Clusters/Update",
         "schema": {
-            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag"],
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId", "{:r:}/Id", "{:r:}/Etag", "{:r:}/Type"],
             "flatten": [{
                 "source": "{:p:}/clusterName",
                 "target": "/name"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile",
+                "target": "/roles/linux_os_profile"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys",
+                "target": "/roles/linux_os_profile/ssh_keys"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/LinuxOperatingSystemProfile/SSHProfile/PublicKeys/CertificateData",
+                "target": "/roles/linux_os_profile/ssh_keys/key_data"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/VirtualNetworkProfile",
+                "target": "/roles/vnet_profile"
+            }, {
+                "source": "{:r:}/Properties/SecurityProfile/{:**:}",
+                "target": "/security_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/OsProfile/{:**:}",
+                "target": "/roles/linux_os_profile/",
+                "priority": "Lower"
+            }, {
+                "source": "{:r:}/Properties/ComputeProfile/Roles/VirtualNetworkProfile/{:**:}",
+                "target": "/roles/vnet_profile/",
+                "priority": "Lower"
             }, {
                 "source": "{:**:}",
                 "target": "/",

@@ -5,7 +5,6 @@
 @using System.Linq
 @inherits TfProviderTemplateBase<(TfProviderField Field, string Value, Stack<IDictionary<string, string>> FieldDefs)>
 @functions{
-    private string GetFieldVariableName(TfProviderField field) => "tmpRespOf" + CodeNamer.GetAzureRmPropPathLocalVarBaseName(field);
     private string IncludeSelf(TfProviderField field)
         => Include<StoreFieldsDefSubTemplate, (TfProviderField, string, Stack<IDictionary<string, string>>)>(
             (field, null, Model.FieldDefs));
@@ -20,21 +19,12 @@
         definition = Model.FieldDefs.First(def => def.ContainsKey(Model.Field.Parent.PropertyPath));
     }
 
-    var actualValue = Model.Value;
-    if (string.IsNullOrEmpty(actualValue))
-    {
-        var fieldVarName = GetFieldVariableName(Model.Field);
-@:@(Indentation)@(fieldVarName) := make(map[string]interface{})
-        Model.FieldDefs.Peek().Add(Model.Field.PropertyPath, fieldVarName);
-        actualValue = fieldVarName;
-    }
-
     if (Model.Field.Parent.IsRoot)
     {
-@:@(Indentation)d.Set("@(Model.Field.Name)", @(actualValue))
+@:@(Indentation)d.Set("@(Model.Field.Name)", @(Model.Value))
     }
     else
     {
-@:@(Indentation)@(definition[Model.Field.Parent.PropertyPath])["@(Model.Field.Name)"] = @(actualValue)
+@:@(Indentation)@(definition[Model.Field.Parent.PropertyPath])["@(Model.Field.Name)"] = @(Model.Value)
     }
 }

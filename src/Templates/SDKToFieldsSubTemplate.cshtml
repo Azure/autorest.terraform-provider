@@ -37,15 +37,26 @@
 
     if (!Model.Type.Chain.Any())
     {
-        if (Model.Data.GoType.Terminal != GoSDKTerminalTypes.Complex)
+        if (Model.Data.GoType.IsSimple)
         {
 @:@(IncludeStoreFields(Model.Data.BackingField, value))
         }
         else
         {
+            var fieldVarName = string.Empty;
+            if (!isIntermediate && Model.Data.BackingField != null)
+            {
+                fieldVarName = "tmpRespOf" + GetNonTerminalBaseVariableName();
+@:@(Indentation)@(fieldVarName) := make(map[string]interface{})
+                Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, fieldVarName);
+            }
             foreach (var prop in Model.Data.Properties)
             {
 @:@(IncludeSelf(prop, prop.GoType, GetNewScope(Model.Scope)))
+            }
+            if (!string.IsNullOrEmpty(fieldVarName))
+            {
+@:@(IncludeStoreFields(Model.Data.BackingField, fieldVarName))
             }
         }
     }
