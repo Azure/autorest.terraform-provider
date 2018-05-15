@@ -1,0 +1,107 @@
+{
+    "name": "Logic App",
+    "spec": "https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/specification/logic/resource-manager/Microsoft.Logic/stable/2016-06-01/logic.json",
+    "import": {
+        "fmt": "fmt",
+        "log": "log",
+        "net/http": "net/http",
+        "strings": "strings",
+        "schema": "github.com/hashicorp/terraform/helper/schema",
+        "utils": "github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils",
+        "logic": "github.com/Azure/azure-sdk-for-go/services/logic/mgmt/2016-06-01/logic"
+    },
+    "typepkg": [{
+        "type": "{:**:}",
+        "package": "logic"
+    }],
+    "create": [{
+        "method": "LogicManagementClient/Workflows/CreateOrUpdate",
+        "schema": {
+            "ignore": [
+                "{:p:}/apiVersion", "{:p:}/subscriptionId", "{:p:}/Id", "{:p:}/Type",
+                "{:p:}/workflow/CreatedTime", "{:p:}/workflow/ChangedTime", "{:p:}/workflow/Definition", "{:p:}/workflow/Parameters/Value", "{:p:}/workflow/Parameters/Metadata",
+                "{:p:}/workflow/Sku/Plan/Name", "{:p:}/workflow/Sku/Plan/Type", "{:p:}/workflow/IntegrationAccount/Name", "{:p:}/workflow/IntegrationAccount/Type",
+                "{:r:}/Id", "{:r:}/Etag", "{:r:}/Type",
+                "{:r:}/CreatedTime", "{:r:}/ChangedTime", "{:r:}/Sku/Plan/{:**:}", "{:r:}/IntegrationAccount/{:**:}", "{:r:}/Definition", "{:r:}/Parameters/Value", "{:r:}/Parameters/Metadata"
+            ],
+            "flatten": [{
+                "source": "{:p:}/workflow/Sku/{:**:}",
+                "target": "/sku/"
+            }, {
+                "source": "{:r:}/Sku/{:**:}",
+                "target": "/sku/"
+            }, {
+                "source": "{:p:}/workflow/Sku/Plan/Id",
+                "target": "/sku/keyvault_id",
+                "priority": "High"
+            }, {
+                "source": "{:p:}/workflow/IntegrationAccount/Id",
+                "target": "/integration_account/keyvault_id",
+                "priority": "High"
+            }, {
+                "source": "{:**:}",
+                "target": "/",
+                "priority": "Lowest"
+            }]
+        },
+        "setId": true
+    }],
+    "read": [{
+        "method": "LogicManagementClient/Workflows/Get",
+        "schema": {
+            "ignore": [
+                "{:p:}/apiVersion", "{:p:}/subscriptionId", "{:p:}/Id", "{:p:}/Type", "{:r:}/Id", "{:r:}/Etag", "{:r:}/Type", "{:r:}/CreatedTime", "{:r:}/ChangedTime", "{:r:}/Sku/{:**:}", "{:r:}/Definition", "{:r:}/Parameters/Value", "{:r:}/Parameters/Metadata"
+            ],
+            "flatten": [{
+                "source": "{:p:}/workflow/Sku/{:**:}",
+                "target": "/sku/"
+            }, {
+                "source": "{:**:}",
+                "target": "/",
+                "priority": "Lowest"
+            }]
+        }
+    }],
+    "update": [{
+        "method": "LogicManagementClient/Workflows/CreateOrUpdate",
+        "schema": {
+            "ignore": [
+                "{:p:}/apiVersion", "{:p:}/subscriptionId", "{:p:}/Id", "{:p:}/Type",
+                "{:p:}/workflow/CreatedTime", "{:p:}/workflow/ChangedTime", "{:p:}/workflow/Definition", "{:p:}/workflow/Parameters/Value", "{:p:}/workflow/Parameters/Metadata",
+                "{:p:}/workflow/Sku/Plan/Name", "{:p:}/workflow/Sku/Plan/Type", "{:p:}/workflow/IntegrationAccount/Name", "{:p:}/workflow/IntegrationAccount/Type",
+                "{:r:}/Id", "{:r:}/Etag", "{:r:}/Type",
+                "{:r:}/CreatedTime", "{:r:}/ChangedTime", "{:r:}/Sku/Plan/{:**:}", "{:r:}/IntegrationAccount/{:**:}", "{:r:}/Definition", "{:r:}/Parameters/Value", "{:r:}/Parameters/Metadata"
+            ],
+            "flatten": [{
+                "source": "{:p:}/workflow/Sku/{:**:}",
+                "target": "/sku/"
+            }, {
+                "source": "{:r:}/Sku/{:**:}",
+                "target": "/sku/"
+            }, {
+                "source": "{:p:}/workflow/Sku/Plan/Id",
+                "target": "/sku/keyvault_id",
+                "priority": "High"
+            }, {
+                "source": "{:p:}/workflow/IntegrationAccount/Id",
+                "target": "/integration_account/keyvault_id",
+                "priority": "High"
+            }, {
+                "source": "{:**:}",
+                "target": "/",
+                "priority": "Lowest"
+            }]
+        }
+    }],
+    "delete": [{
+        "method": "LogicManagementClient/Workflows/Delete",
+        "schema": {
+            "ignore": ["{:p:}/apiVersion", "{:p:}/subscriptionId"],
+            "flatten": [{
+                "source": "{:**:}",
+                "target": "/",
+                "priority": "Lowest"
+            }]
+        }
+    }]
+}

@@ -2,6 +2,7 @@ using AutoRest.Core.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static AutoRest.Terraform.TfProviderMetadata;
 
 namespace AutoRest.Terraform
 {
@@ -25,10 +26,10 @@ namespace AutoRest.Terraform
         private void SetupRules()
         {
             RenameRules.Clear();
-            RenameRules.AddRange(from r in Settings.Metadata.SDKTunings.Renames
+            RenameRules.AddRange(from r in Settings.Metadata.SDKTunings?.Renames ?? Enumerable.Empty<SDKRenameDefinition>()
                                  select (r.SourcePath.ToPropertyPathRegex(), r.TargetName));
             TypeRedefineRules.Clear();
-            TypeRedefineRules.AddRange(from t in Settings.Metadata.SDKTunings.TypeDefinitions
+            TypeRedefineRules.AddRange(from t in Settings.Metadata.SDKTunings?.TypeDefinitions ?? Enumerable.Empty<SDKTypeDefinition>()
                                        let pattern = t.FieldPath.ToPropertyPathRegex()
                                        select (pattern, GoSDKTypeChain.Parse(t.TargetType), GoSDKTypeChain.Parse(t.GenerateType)));
         }

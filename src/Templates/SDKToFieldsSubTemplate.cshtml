@@ -48,7 +48,7 @@
             {
                 fieldVarName = "tmpRespOf" + GetNonTerminalBaseVariableName();
 @:@(Indentation)@(fieldVarName) := make(map[string]interface{})
-                Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, fieldVarName);
+                Model.FieldDefs.Peek().TryAdd(Model.Data.BackingField.PropertyPath, fieldVarName);
             }
             foreach (var prop in Model.Data.Properties)
             {
@@ -75,7 +75,7 @@
 
         Indentation.Indent();
         Model.FieldDefs.Push(new Dictionary<string, string>());
-        Model.FieldDefs.Peek().Add(Model.Data.BackingField.PropertyPath, valVarName);
+        Model.FieldDefs.Peek().TryAdd(Model.Data.BackingField.PropertyPath, valVarName);
         if (!valueType.IsSimple)
         {
             if (!valueType.Chain.Any())

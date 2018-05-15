@@ -27,48 +27,50 @@ namespace AutoRest.Terraform
 
         private static void AppendDisplayString(this Method method, IndentedStringBuilder builder)
         {
+            var displayedTypes = new HashSet<string>();
+
             builder.AppendLine($"{method.Flavor} {method.Qualifier} \"{method.Name}\"; Transformations [{method.InputParameterTransformation.Count}]; Parameters [{method.Parameters.Count}]; Responses [{method.Responses.Count}]");
             builder.Indent();
-            method.Parameters.ForEach(p => p.AppendDisplayString(builder));
+            method.Parameters.ForEach(p => p.AppendDisplayString(builder, displayedTypes));
             builder.Outdent();
 
             builder.Indent();
-            method.Responses.ForEach(r => r.Value.AppendDisplayString(builder, r.Key));
+            method.Responses.ForEach(r => r.Value.AppendDisplayString(builder, r.Key, displayedTypes));
             builder.Outdent();
         }
 
-        private static void AppendDisplayString(this Parameter parameter, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this Parameter parameter, IndentedStringBuilder builder, ISet<string> displayedTypes)
         {
             builder.AppendLine($"{parameter.Location} {parameter.Qualifier} \"{parameter.GetClientName()}\"; " +
                 $"Type: {parameter.ModelType.ToSummaryString()}; {(parameter.IsRequired ? "Required" : "Optional")}");
             builder.Indent();
-            parameter.ModelType.AppendDisplayString(builder);
+            parameter.ModelType.AppendDisplayString(builder, displayedTypes);
             builder.Outdent();
         }
 
-        private static void AppendDisplayString(this Response response, IndentedStringBuilder builder, HttpStatusCode status)
+        private static void AppendDisplayString(this Response response, IndentedStringBuilder builder, HttpStatusCode status, ISet<string> displayedTypes)
         {
             var name = $"HTTP {status} ({(int)status})";
             builder.AppendLine($"Response \"HTTP {status} ({(int)status})\" Header: {response.Headers?.ToSummaryString() ?? "None"}, Body: {response.Body?.ToSummaryString() ?? "None"}");
             builder.Indent();
-            response.Headers?.AppendDisplayString(builder);
-            response.Body?.AppendDisplayString(builder);
+            response.Headers?.AppendDisplayString(builder, displayedTypes);
+            response.Body?.AppendDisplayString(builder, displayedTypes);
             builder.Outdent();
         }
 
-        private static void AppendDisplayString(this CompositeType composite, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this CompositeType composite, IndentedStringBuilder builder, ISet<string> displayedTypes)
         {
             var propertiesSet = new HashSet<Property>(composite.Properties);
-            composite.Properties.ForEach(p => p.AppendDisplayString(builder));
-            composite.ComposedProperties.Where(p => !propertiesSet.Contains(p)).ForEach(p => p.AppendDisplayString(builder, true));
+            composite.Properties.ForEach(p => p.AppendDisplayString(builder, displayedTypes));
+            composite.ComposedProperties.Where(p => !propertiesSet.Contains(p)).ForEach(p => p.AppendDisplayString(builder, displayedTypes, true));
         }
 
-        private static void AppendDisplayString(this Property property, IndentedStringBuilder builder, bool isComposed = false)
+        private static void AppendDisplayString(this Property property, IndentedStringBuilder builder, ISet<string> displayedTypes, bool isComposed = false)
         {
             builder.AppendLine($"{(isComposed ? "Composed " : string.Empty)}{property.Qualifier} \"{property.GetClientName()}\"; " +
                 $"Type: {property.ModelType.ToSummaryString()}; {(property.IsRequired ? "Required" : "Optional")}");
             builder.Indent();
-            property.ModelType.AppendDisplayString(builder);
+            property.ModelType.AppendDisplayString(builder, displayedTypes);
             builder.Outdent();
         }
 
@@ -87,25 +89,29 @@ namespace AutoRest.Terraform
             }
         }
 
-        private static void AppendDisplayString(this IModelType type, IndentedStringBuilder builder)
+        private static void AppendDisplayString(this IModelType type, IndentedStringBuilder builder, ISet<string> displayedTypes)
         {
-            switch (type)
+            if (!displayedTypes.Contains(type.Name))
             {
-                case PrimaryType p:
-                case EnumType e:
-                    break;
-                case CompositeType composite:
-                    composite.AppendDisplayString(builder);
-                    break;
-                case SequenceType sequence:
-                    sequence.ElementType.AppendDisplayString(builder);
-                    break;
-                case DictionaryType dictionary:
-                    dictionary.ValueType.AppendDisplayString(builder);
-                    break;
-                default:
-                    builder.AppendLine("UNKNOWN TYPE");
-                    break;
+                displayedTypes.Add(type.Name);
+                switch (type)
+                {
+                    case PrimaryType p:
+                    case EnumType e:
+                        break;
+                    case CompositeType composite:
+                        composite.AppendDisplayString(builder, displayedTypes);
+                        break;
+                    case SequenceType sequence:
+                        sequence.ElementType.AppendDisplayString(builder, displayedTypes);
+                        break;
+                    case DictionaryType dictionary:
+                        dictionary.ValueType.AppendDisplayString(builder, displayedTypes);
+                        break;
+                    default:
+                        builder.AppendLine("UNKNOWN TYPE");
+                        break;
+                }
             }
         }
     }
